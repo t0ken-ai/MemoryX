@@ -14,7 +14,7 @@ from urllib.error import HTTPError
 class MemoryXClient:
     """MemoryX 记忆客户端"""
     
-    DEFAULT_BASE_URL = "http://t0ken.ai/api"
+    DEFAULT_BASE_URL = "https://t0ken.ai/api"
     
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None):
         """

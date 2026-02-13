@@ -70,7 +70,7 @@ pip install memoryx
 
 ## 认领机器
 
-Agent 注册后，访问 [t0ken.ai/agent-register](http://t0ken.ai/agent-register) 输入验证码认领这台机器。
+Agent 注册后，访问 [t0ken.ai/agent-register](https://t0ken.ai/agent-register) 输入验证码认领这台机器。
 
 ## 安全与开源
 
