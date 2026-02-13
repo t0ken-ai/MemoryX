@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "t0ken-memoryx"
+version = "1.0.4"
+description = "MemoryX Python SDK - 让 AI Agents 轻松拥有持久记忆"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [
+    {name = "MemoryX Team", email = "support@t0ken.ai"}
+]
+keywords = ["memory", "ai", "agent", "llm", "cognitive", "memoryx"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Homepage = "https://t0ken.ai"
+Documentation = "https://docs.t0ken.ai"
+Repository = "https://github.com/CensorKo/MemoryX"
+Issues = "https://github.com/CensorKo/MemoryX/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["memoryx*"]
