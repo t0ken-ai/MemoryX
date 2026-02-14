@@ -127,49 +127,75 @@ class MemoryXClient:
             # 创建目录
             os.makedirs(HOOK_DIR, exist_ok=True)
             
-            # 写入 HOOK.md
-            with open(os.path.join(HOOK_DIR, "HOOK.md"), "w") as f:
-                f.write("""# MemoryX OpenClaw Hook
-name: memoryx-sync
-version: 1.0.0
-entry: handler.py
-author: MemoryX Team
-description: 自动同步重要记忆到 MemoryX
-requirements:
-  - t0ken-memoryx>=1.0.3
+            # 写入 handler.js (OpenClaw 只支持 JS/TS)
+            with open(os.path.join(HOOK_DIR, "handler.js"), "w") as f:
+                f.write("""/**
+ * MemoryX OpenClaw Hook - JavaScript 版
+ * 自动同步重要记忆到 MemoryX
+ */
+
+const MEMORYX_AVAILABLE = (() => {
+  try {
+    require('t0ken-memoryx');
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
+
+function isPluginInstalled() {
+  try {
+    const { execSync } = require('child_process');
+    const result = execSync('openclaw plugins list', { 
+      encoding: 'utf8', 
+      timeout: 5000 
+    });
+    return result.includes('memoryx-realtime') && result.includes('loaded');
+  } catch (e) {
+    return false;
+  }
+}
+
+async function onMessage(message, context) {
+  // 如果 memoryx-realtime-plugin 已安装，不处理（避免重复）
+  if (isPluginInstalled()) {
+    return { context };
+  }
+  
+  if (!MEMORYX_AVAILABLE || !message || message.length < 5) {
+    return { context };
+  }
+  
+  // 提交到云端处理
+  try {
+    const memoryx = require('t0ken-memoryx');
+    const memory = memoryx.connect_memory({ verbose: false });
+    
+    // 异步存储（不阻塞）
+    memory.add(message, 'semantic', 'default', {
+      source: 'openclaw_hook_js',
+      timestamp: new Date().toISOString()
+    }).catch(() => {});
+  } catch (e) {}
+  
+  return { context };
+}
+
+function onResponse(response, context) {
+  return response;
+}
+
+module.exports = { onMessage, onResponse };
 """)
             
-            # 写入 handler.py
-            with open(os.path.join(HOOK_DIR, "handler.py"), "w") as f:
-                f.write("""#!/usr/bin/env python3
-import os
-
-def on_message(message, context):
-    if len(message) < 5:
-        return {}
-    
-    try:
-        from memoryx import connect_memory
-        memory = connect_memory(verbose=False)
-        
-        # 搜索相关记忆
-        results = memory.search(message, limit=3)
-        if results.get('data'):
-            context['memoryx_context'] = results['data']
-        
-        # 简单筛选
-        keywords = ['记住', '我是', '我喜欢', '纠正', '昨天', '计划']
-        if any(k in message for k in keywords):
-            memory.add(message)
-            print(f"💾 已自动记忆")
-            
-    except Exception as e:
-        pass
-    
-    return {'context': context}
-
-def on_response(response, context):
-    return response
+            # 写入 HOOK.md
+            with open(os.path.join(HOOK_DIR, "HOOK.md"), "w") as f:
+                f.write("""name: memoryx-sync
+version: 1.0.0
+entry: handler.js
+events:
+  - message:received
+  - agent:response
 """)
             
             # 配置 OpenClaw

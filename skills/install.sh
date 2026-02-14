@@ -48,48 +48,74 @@ if [ -d "$HOME/.openclaw" ]; then
     
     # Create HOOK.md
     cat > "$HOOK_DIR/HOOK.md" << 'HOOKMD'
-# MemoryX OpenClaw Hook
 name: memoryx-sync
 version: 1.0.0
-entry: handler.py
-author: MemoryX Team
-description: Auto-sync important memories to MemoryX
-requirements:
-  - t0ken-memoryx>=1.0.4
+entry: handler.js
+events:
+  - message:received
+  - agent:response
 HOOKMD
     
-    # Create handler.py
-    cat > "$HOOK_DIR/handler.py" << 'HANDLERPY'
-#!/usr/bin/env python3
-import os
+    # Create handler.js (OpenClaw only supports JS/TS hooks)
+    cat > "$HOOK_DIR/handler.js" << 'HANDLERJS'
+/**
+ * MemoryX OpenClaw Hook - JavaScript
+ * Auto-sync important memories to MemoryX
+ */
 
-def on_message(message, context):
-    if len(message) < 5:
-        return {}
-    
-    try:
-        from memoryx import connect_memory
-        memory = connect_memory(verbose=False)
-        
-        # Search related memories
-        results = memory.search(message, limit=3)
-        if results.get('data'):
-            context['memoryx_context'] = results['data']
-        
-        # Simple filtering
-        keywords = ['记住', '我是', '我喜欢', '我讨厌', '纠正', '昨天', '明天', '计划']
-        if any(k in message for k in keywords):
-            memory.add(message, category='semantic')
-            print(f"💾 Auto-saved to MemoryX")
-            
-    except Exception as e:
-        pass
-    
-    return {'context': context}
+const MEMORYX_AVAILABLE = (() => {
+  try {
+    require('t0ken-memoryx');
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
 
-def on_response(response, context):
-    return response
-HANDLERPY
+function isPluginInstalled() {
+  try {
+    const { execSync } = require('child_process');
+    const result = execSync('openclaw plugins list', { 
+      encoding: 'utf8', 
+      timeout: 5000 
+    });
+    return result.includes('memoryx-realtime') && result.includes('loaded');
+  } catch (e) {
+    return false;
+  }
+}
+
+async function onMessage(message, context) {
+  // Skip if memoryx-realtime-plugin is installed (avoid duplication)
+  if (isPluginInstalled()) {
+    return { context };
+  }
+  
+  if (!MEMORYX_AVAILABLE || !message || message.length < 5) {
+    return { context };
+  }
+  
+  // Submit to cloud for processing
+  try {
+    const memoryx = require('t0ken-memoryx');
+    const memory = memoryx.connect_memory({ verbose: false });
+    
+    // Async store (non-blocking)
+    memory.add(message, 'semantic', 'default', {
+      source: 'openclaw_hook_js',
+      timestamp: new Date().toISOString()
+    }).catch(() => {});
+  } catch (e) {}
+  
+  return { context };
+}
+
+function onResponse(response, context) {
+  return response;
+}
+
+module.exports = { onMessage, onResponse };
+HANDLERJS
     
     # Configure OpenClaw
     CONFIG_FILE="$HOME/.openclaw/openclaw.json"

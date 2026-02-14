@@ -1,0 +1,37 @@
+{
+  "name": "@memoryx/openclaw-hook",
+  "version": "1.0.0",
+  "description": "MemoryX OpenClaw Hook - JavaScript version",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "openclaw",
+    "memoryx",
+    "memory",
+    "hook",
+    "ai",
+    "agent"
+  ],
+  "author": "MemoryX Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CensorKo/MemoryX.git",
+    "directory": "openclaw-hook"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "HOOK.md"
+  ]
+}
