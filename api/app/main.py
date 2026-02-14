@@ -50,11 +50,17 @@ app.include_router(firebase_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 app.include_router(claim_router, prefix="/api")
 
-# Mount static files
-app.mount("/portal", StaticFiles(directory="/app/static/portal", html=True), name="portal")
-app.mount("/docs", StaticFiles(directory="/app/static", html=True), name="docs")
-app.mount("/admin", StaticFiles(directory="/app/static/admin", html=True), name="admin")
-app.mount("/doc", StaticFiles(directory="/app/static/doc", html=True), name="doc")
+# Mount static files (optional - only if directories exist)
+static_dirs = {
+    "/portal": "/app/static/portal",
+    "/docs": "/app/static",
+    "/admin": "/app/static/admin",
+    "/doc": "/app/static/doc",
+}
+
+for route, directory in static_dirs.items():
+    if os.path.exists(directory):
+        app.mount(route, StaticFiles(directory=directory, html=True), name=route.split("/")[1] if route != "/docs" else "docs")
 
 # Static pages
 @app.get("/", response_class=HTMLResponse)
