@@ -28,19 +28,41 @@ jobs:
       - name: Generate OpenAPI spec
         run: |
           cd api
-          python3 -c "
+          python3 << 'PYEOF'
 import sys
 sys.path.insert(0, '.')
 import os
-os.environ['DATABASE_URL'] = 'postgresql://localhost/test'
-os.environ['SECRET_KEY'] = 'test-secret'
-os.environ['REDIS_URL'] = 'redis://localhost:6379'
-from app.main import app
-import json
-openapi = app.openapi()
-json.dump(openapi, open('../openapi.json', 'w'), indent=2, ensure_ascii=False)
-print('Generated openapi.json')
-" || echo '{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"MemoryX API\",\"version\":\"1.0.0\"}}' > ../openapi.json
+
+# 设置最小环境变量
+os.environ['DATABASE_URL'] = 'sqlite:///./test.db'
+os.environ['SECRET_KEY'] = 'test-secret-key-for-docs-generation'
+os.environ['REDIS_URL'] = 'redis://localhost:6379/0'
+os.environ['OLLAMA_HOST'] = 'http://localhost:11434'
+
+try:
+    from app.main import app
+    import json
+    
+    openapi = app.openapi()
+    
+    with open('../openapi.json', 'w', encoding='utf-8') as f:
+        json.dump(openapi, f, indent=2, ensure_ascii=False)
+    
+    # 验证文件大小
+    import os as os2
+    size = os2.path.getsize('../openapi.json')
+    print(f'✅ Generated openapi.json ({size} bytes)')
+    
+    if size < 1000:
+        print('⚠️ Warning: openapi.json seems too small')
+        sys.exit(1)
+        
+except Exception as e:
+    print(f'❌ Error generating OpenAPI: {e}')
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+PYEOF
 
       - name: Checkout Docs Repository
         uses: actions/checkout@v4
