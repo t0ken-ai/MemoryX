@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'hook-v*'
-    paths:
-      - 'openclaw-hook/**'
 
 jobs:
   publish:
