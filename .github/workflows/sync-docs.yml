@@ -23,69 +23,60 @@ jobs:
       - name: Install dependencies
         run: |
           cd api
-          pip install -r requirements.txt 2>&1 | tee pip-install.log
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "=== Installed packages ==="
+          pip list | grep -E "fastapi|pydantic|sqlalchemy|celery|redis"
 
       - name: Generate OpenAPI spec
         run: |
           cd api
-          python3 << 'PYEOF' 2>&1 | tee openapi-generate.log
+          export DATABASE_URL="sqlite:///./test.db"
+          export SECRET_KEY="test-secret-for-docs"
+          export REDIS_URL="redis://localhost:6379/0"
+          export OLLAMA_HOST="http://localhost:11434"
+          
+          python3 <> 'PYEOF'
 import sys
 sys.path.insert(0, '.')
-import os
 
-# 设置最小环境变量
-os.environ['DATABASE_URL'] = 'sqlite:///./test.db'
-os.environ['SECRET_KEY'] = 'test-secret-key-for-docs-generation'
-os.environ['REDIS_URL'] = 'redis://localhost:6379/0'
-os.environ['OLLAMA_HOST'] = 'http://localhost:11434'
+print("=== Python Path ===")
+print(sys.path)
 
+print("=== Importing app ===")
 try:
-    print("Importing app...")
     from app.main import app
+    print("✅ Import successful")
+except Exception as e:
+    print(f"❌ Import failed: {e}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+
+print("=== Generating OpenAPI ===")
+try:
     import json
-    
-    print("Generating OpenAPI spec...")
     openapi = app.openapi()
+    path_count = len(openapi.get('paths', {}))
+    print(f"✅ Generated OpenAPI with {path_count} paths")
     
     with open('../openapi.json', 'w', encoding='utf-8') as f:
         json.dump(openapi, f, indent=2, ensure_ascii=False)
     
-    # 验证文件大小
-    import os as os2
-    size = os2.path.getsize('../openapi.json')
-    print(f'✅ Generated openapi.json ({size} bytes)')
+    import os
+    size = os.path.getsize('../openapi.json')
+    print(f"✅ File size: {size} bytes")
     
     if size < 1000:
-        print('⚠️ Warning: openapi.json seems too small')
+        print("❌ File too small, failing")
         sys.exit(1)
-    else:
-        print("Success!")
         
 except Exception as e:
-    print(f'❌ Error: {e}')
+    print(f"❌ Generation failed: {e}")
     import traceback
     traceback.print_exc()
     sys.exit(1)
 PYEOF
-        continue-on-error: true
-
-      - name: Debug - Show logs on failure
-        if: failure()
-        run: |
-          echo "=== PIP INSTALL LOG ==="
-          cat api/pip-install.log || echo "No pip log"
-          echo ""
-          echo "=== OPENAPI GENERATE LOG ==="
-          cat api/openapi-generate.log || echo "No openapi log"
-          echo ""
-          echo "=== REQUIREMENTS ==="
-          cat api/requirements.txt
-
-      - name: Fallback - Create placeholder if generation failed
-        if: failure()
-        run: |
-          echo '{"openapi":"3.0.0","info":{"title":"MemoryX API","version":"1.0.0"},"paths":{}}' > openapi.json
-          echo "Using fallback OpenAPI spec"
 
       - name: Checkout Docs Repository
         uses: actions/checkout@v4
@@ -96,6 +87,9 @@ PYEOF
 
       - name: Sync OpenAPI to Docs
         run: |
+          ls -la openapi.json
+          wc -l openapi.json
+          head -20 openapi.json
           cp openapi.json docs-repo/
           cd docs-repo
           git config user.name "GitHub Actions"
