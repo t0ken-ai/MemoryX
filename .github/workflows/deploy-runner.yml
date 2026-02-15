@@ -134,9 +134,9 @@ jobs:
           file: ./Dockerfile.api
           push: true  # 推送到 ghcr.io
           tags: |
-            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
-            ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name || 'latest' }}
-            ghcr.io/${{ github.repository }}:release
+            ghcr.io/t0ken-ai/memoryx:sha-${{ github.sha }}
+            ghcr.io/t0ken-ai/memoryx:${{ github.event.release.tag_name || 'latest' }}
+            ghcr.io/t0ken-ai/memoryx:release
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -149,7 +149,7 @@ jobs:
           docker rm memoryx-api 2>/dev/null || true
           
           # 拉取新镜像
-          docker pull ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+          docker pull ghcr.io/t0ken-ai/memoryx:sha-${{ github.sha }}
           
           # 更新静态文件
           cp -r ${{ github.workspace }}/static/* /data/memoryx/static/
@@ -161,7 +161,7 @@ jobs:
             --network host \
             -v /data/memoryx/static:/app/static:ro \
             -v /etc/memoryx/api.env:/app/.env:ro \
-            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+            ghcr.io/t0ken-ai/memoryx:sha-${{ github.sha }}
           
           # 健康检查
           echo "⏳ Waiting for health check..."
