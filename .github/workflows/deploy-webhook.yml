@@ -74,7 +74,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Image digest
-        run: echo "Image pushed: ghcr.io/t0ken-ai/memoryx-api:${{ steps.tag.outputs.tag }}"
+        run: echo "Image pushed"
 
   deploy-production:
     name: Deploy to Production (31.65)
