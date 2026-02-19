@@ -263,9 +263,9 @@ class GraphMemoryService:
                 settings.neo4j_uri,
                 auth=(settings.neo4j_user, settings.neo4j_password)
             )
-            logger.info(f"Neo4j connected: {settings.neo4j_uri}")
+            logger.info(f"[INIT] Neo4j connected | uri={settings.neo4j_uri}")
         except Exception as e:
-            logger.error(f"Neo4j connection failed: {e}")
+            logger.error(f"[INIT] Neo4j connection failed | uri={settings.neo4j_uri} | error={type(e).__name__}: {str(e)}")
     
     def _get_qdrant_client(self, user_id: str) -> QdrantClient:
         collection_name = f"{settings.qdrant_collection}_{user_id[:8]}"
@@ -278,6 +278,7 @@ class GraphMemoryService:
             
             try:
                 client.get_collection(collection_name)
+                logger.debug(f"[QDRANT] Collection exists | collection={collection_name}")
             except Exception:
                 client.create_collection(
                     collection_name=collection_name,
@@ -286,52 +287,85 @@ class GraphMemoryService:
                         distance=Distance.COSINE
                     )
                 )
-                logger.info(f"Created Qdrant collection: {collection_name}")
+                logger.info(f"[QDRANT] Created collection | collection={collection_name} | vector_size=1024")
             
             self.qdrant_clients[collection_name] = client
         
         return self.qdrant_clients[collection_name]
     
     async def _call_llm(self, messages: List[Dict], temperature: float = 0.1) -> str:
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(
-                f"{settings.ollama_base_url}/v1/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "model": settings.llm_model,
-                    "messages": messages,
-                    "temperature": temperature
-                }
-            )
-            
-            if response.status_code != 200:
-                raise Exception(f"LLM call failed: {response.status_code} - {response.text}")
-            
-            data = response.json()
-            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        import time
+        start_time = time.time()
+        model = settings.llm_model
+        
+        try:
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                response = await client.post(
+                    f"{settings.ollama_base_url}/v1/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "model": model,
+                        "messages": messages,
+                        "temperature": temperature
+                    }
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"LLM call failed: {response.status_code} - {response.text}")
+                
+                data = response.json()
+                content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                
+                duration_ms = int((time.time() - start_time) * 1000)
+                logger.debug(f"[LLM] Call success | model={model} | duration={duration_ms}ms | response_len={len(content)}")
+                
+                return content
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[LLM] Call failed | model={model} | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
+            raise
     
     async def _call_qwen(self, messages: List[Dict], temperature: float = 0.1) -> str:
+        import time
+        start_time = time.time()
         qwen_url = getattr(settings, 'qwen_base_url', settings.ollama_base_url)
         qwen_model = getattr(settings, 'qwen_model', 'qwen3-14b-sft')
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{qwen_url}/qwen/v1/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "model": qwen_model,
-                    "messages": messages,
-                    "temperature": temperature,
-                    "max_tokens": 2000
-                }
-            )
-            
-            if response.status_code != 200:
-                raise Exception(f"Qwen call failed: {response.status_code} - {response.text}")
-            
-            data = response.json()
-            return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{qwen_url}/qwen/v1/chat/completions",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "model": qwen_model,
+                        "messages": messages,
+                        "temperature": temperature,
+                        "max_tokens": 2000
+                    }
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"Qwen call failed: {response.status_code} - {response.text}")
+                
+                data = response.json()
+                content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                
+                duration_ms = int((time.time() - start_time) * 1000)
+                logger.debug(f"[QWEN] Call success | model={qwen_model} | duration={duration_ms}ms | response_len={len(content)}")
+                
+                return content
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[QWEN] Call failed | model={qwen_model} | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
+            raise
     
     async def extract_facts(self, text: str) -> List[Dict[str, Any]]:
+        import time
+        start_time = time.time()
+        text_preview = text[:50] + "..." if len(text) > 50 else text
+        
+        logger.debug(f"[EXTRACT_FACTS] START | text_len={len(text)} | preview={text_preview}")
+        
         messages = [
             {"role": "system", "content": "你是一个专业的记忆提取助手。请从对话中提取所有独立的原子事实，只返回JSON格式。"},
             {"role": "user", "content": EXTRACT_FACTS_PROMPT.format(text=text)}
@@ -345,34 +379,61 @@ class GraphMemoryService:
             if json_start >= 0 and json_end > json_start:
                 json_str = response[json_start:json_end]
                 result = json.loads(json_str)
-                return result.get("facts", [])
+                facts = result.get("facts", [])
+                
+                duration_ms = int((time.time() - start_time) * 1000)
+                logger.info(f"[EXTRACT_FACTS] SUCCESS | facts_count={len(facts)} | duration={duration_ms}ms")
+                
+                return facts
                     
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error in extract_facts: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[EXTRACT_FACTS] JSON_PARSE_ERROR | duration={duration_ms}ms | error={str(e)}")
         except Exception as e:
-            logger.error(f"Fact extraction error: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[EXTRACT_FACTS] ERROR | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
         
         return [{"content": text, "category": "fact", "importance": "medium"}]
     
     async def _get_embedding(self, text: str) -> List[float]:
+        import time
+        start_time = time.time()
         embed_url = getattr(settings, 'embed_base_url', settings.ollama_base_url)
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                f"{embed_url}/v1/embeddings",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "model": settings.embed_model,
-                    "input": text
-                }
-            )
-            
-            if response.status_code != 200:
-                raise Exception(f"Embedding failed: {response.status_code}")
-            
-            data = response.json()
-            return data.get("data", [{}])[0].get("embedding", [])
+        embed_model = settings.embed_model
+        
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{embed_url}/v1/embeddings",
+                    headers={"Content-Type": "application/json"},
+                    json={
+                        "model": embed_model,
+                        "input": text
+                    }
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"Embedding failed: {response.status_code}")
+                
+                data = response.json()
+                embedding = data.get("data", [{}])[0].get("embedding", [])
+                
+                duration_ms = int((time.time() - start_time) * 1000)
+                logger.debug(f"[EMBED] SUCCESS | model={embed_model} | duration={duration_ms}ms | dim={len(embedding)}")
+                
+                return embedding
+        except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[EMBED] FAILED | model={embed_model} | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
+            raise
     
     async def extract_entities_and_relations(self, text: str, user_id: str) -> Dict[str, Any]:
+        import time
+        start_time = time.time()
+        text_preview = text[:50] + "..." if len(text) > 50 else text
+        
+        logger.debug(f"[EXTRACT_ENTITIES] START | user_id={user_id} | text_len={len(text)} | preview={text_preview}")
+        
         messages = [
             {"role": "system", "content": "你是一个专业的实体关系提取助手。请准确提取文本中的实体和关系，只返回JSON格式。"},
             {"role": "user", "content": EXTRACT_ENTITIES_PROMPT.format(text=text)}
@@ -397,18 +458,34 @@ class GraphMemoryService:
                     if relation.get("target") in ["我", "本人", "自己"]:
                         relation["target"] = user_id
                 
+                entities_count = len(result.get("entities", []))
+                relations_count = len(result.get("relations", []))
+                duration_ms = int((time.time() - start_time) * 1000)
+                
+                logger.info(f"[EXTRACT_ENTITIES] SUCCESS | entities={entities_count} | relations={relations_count} | duration={duration_ms}ms")
+                
                 return result
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[EXTRACT_ENTITIES] JSON_PARSE_ERROR | duration={duration_ms}ms | error={str(e)}")
         except Exception as e:
-            logger.error(f"Entity extraction error: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[EXTRACT_ENTITIES] ERROR | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
         
         return {"entities": [], "relations": []}
     
     def save_to_neo4j(self, user_id: str, entities: List[Dict], relations: List[Dict]):
+        import time
+        start_time = time.time()
+        
         if not self.neo4j_driver:
-            logger.warning("Neo4j not connected, skipping graph save")
+            logger.warning("[NEO4J] SKIP | reason=not_connected")
             return
+        
+        entities_saved = 0
+        entities_failed = 0
+        relations_saved = 0
+        relations_failed = 0
         
         with self.neo4j_driver.session() as session:
             for entity in entities:
@@ -426,9 +503,11 @@ class GraphMemoryService:
                 
                 try:
                     session.run(query, name=entity_name, user_id=user_id, properties=properties)
-                    logger.debug(f"Saved entity: {entity_name} ({entity_type})")
+                    entities_saved += 1
+                    logger.debug(f"[NEO4J] Entity saved | name={entity_name} | type={entity_type}")
                 except Exception as e:
-                    logger.error(f"Failed to save entity {entity_name}: {e}")
+                    entities_failed += 1
+                    logger.error(f"[NEO4J] Entity save failed | name={entity_name} | error={type(e).__name__}: {str(e)}")
             
             for relation in relations:
                 source = relation.get("source", "")
@@ -452,11 +531,20 @@ class GraphMemoryService:
                 
                 try:
                     session.run(query, source=source, target=target, user_id=user_id)
-                    logger.debug(f"Saved relation: {source} --{relation_type}--> {target}")
+                    relations_saved += 1
+                    logger.debug(f"[NEO4J] Relation saved | {source} --{relation_type}--> {target}")
                 except Exception as e:
-                    logger.error(f"Failed to save relation {source}->{target}: {e}")
+                    relations_failed += 1
+                    logger.error(f"[NEO4J] Relation save failed | {source}->{target} | error={type(e).__name__}: {str(e)}")
+        
+        duration_ms = int((time.time() - start_time) * 1000)
+        logger.info(f"[NEO4J] SAVE_COMPLETE | user_id={user_id} | entities={entities_saved}/{len(entities)} | relations={relations_saved}/{len(relations)} | duration={duration_ms}ms")
     
     async def save_to_qdrant(self, user_id: str, memory_id: str, content: str, metadata: Dict = None, entities: List[Dict] = None, relations: List[Dict] = None, category: str = "fact", importance: str = "medium", fact_id: int = None):
+        import time
+        start_time = time.time()
+        content_preview = content[:30] + "..." if len(content) > 30 else content
+        
         try:
             client = self._get_qdrant_client(user_id)
             collection_name = f"{settings.qdrant_collection}_{user_id[:8]}"
@@ -486,9 +574,13 @@ class GraphMemoryService:
             )
             
             client.upsert(collection_name=collection_name, points=[point])
-            logger.debug(f"Saved to Qdrant: {memory_id}")
+            
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.debug(f"[QDRANT] SAVE | id={memory_id} | collection={collection_name} | entities={len(entity_names)} | relations={len(relation_list)} | duration={duration_ms}ms")
+            
         except Exception as e:
-            logger.error(f"Failed to save to Qdrant: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.error(f"[QDRANT] SAVE_FAILED | id={memory_id} | duration={duration_ms}ms | error={type(e).__name__}: {str(e)}")
     
     def _parse_entities_from_names(self, entity_names: List[str]) -> List[Dict]:
         entities = []
@@ -624,7 +716,10 @@ class GraphMemoryService:
         trace_id = str(uuid.uuid4())
         start_time = time.time()
         
+        logger.info(f"[MEMORY_JUDGMENT] START | trace_id={trace_id} | user_id={user_id} | new_facts={len(new_facts)} | existing_memories={len(existing_memories)}")
+        
         if not new_facts:
+            logger.info(f"[MEMORY_JUDGMENT] SKIP | trace_id={trace_id} | reason=no_new_facts")
             return {"memory": [], "trace_id": trace_id}
         
         prompt = get_memory_update_messages(existing_memories, new_facts)
@@ -651,13 +746,20 @@ class GraphMemoryService:
                 parsed_operations = result.get("memory", [])
                 
                 reasoning_list = [op.get("reason", "") for op in parsed_operations if op.get("reason")]
+                
+                add_count = sum(1 for op in parsed_operations if op.get("event") == "ADD")
+                update_count = sum(1 for op in parsed_operations if op.get("event") == "UPDATE")
+                delete_count = sum(1 for op in parsed_operations if op.get("event") == "DELETE")
+                none_count = sum(1 for op in parsed_operations if op.get("event") == "NONE")
+                
+                logger.info(f"[MEMORY_JUDGMENT] PARSED | trace_id={trace_id} | ADD={add_count} | UPDATE={update_count} | DELETE={delete_count} | NONE={none_count}")
             else:
                 raise ValueError("No valid JSON found in LLM response")
                 
         except json.JSONDecodeError as e:
-            logger.error(f"JSON parse error in update_memory_with_judgment: {e}")
             execution_success = False
             error_message = f"JSON parse error: {str(e)}"
+            logger.error(f"[MEMORY_JUDGMENT] JSON_PARSE_ERROR | trace_id={trace_id} | error={str(e)}")
             
             default_memory = []
             for i, fact in enumerate(new_facts):
@@ -671,12 +773,14 @@ class GraphMemoryService:
             result = {"memory": default_memory}
             
         except Exception as e:
-            logger.error(f"Memory judgment error: {e}")
             execution_success = False
             error_message = str(e)
+            logger.error(f"[MEMORY_JUDGMENT] ERROR | trace_id={trace_id} | error={type(e).__name__}: {str(e)}")
             result = {"memory": []}
         
         latency_ms = int((time.time() - start_time) * 1000)
+        
+        logger.info(f"[MEMORY_JUDGMENT] COMPLETE | trace_id={trace_id} | duration={latency_ms}ms | success={execution_success}")
         
         db = SessionLocal()
         try:
@@ -699,9 +803,9 @@ class GraphMemoryService:
             )
             db.add(judgment_record)
             db.commit()
-            logger.info(f"Saved judgment record: {trace_id}")
+            logger.debug(f"[MEMORY_JUDGMENT] DB_SAVED | trace_id={trace_id}")
         except Exception as e:
-            logger.error(f"Failed to save judgment record: {e}")
+            logger.error(f"[MEMORY_JUDGMENT] DB_SAVE_FAILED | trace_id={trace_id} | error={type(e).__name__}: {str(e)}")
             db.rollback()
         finally:
             db.close()
@@ -1044,6 +1148,11 @@ class GraphMemoryService:
     
     async def add_memory(self, user_id: str, content: str, metadata: Dict = None, skip_judge: bool = False) -> Dict[str, Any]:
         import uuid
+        import time
+        start_time = time.time()
+        
+        content_preview = content[:50] + "..." if len(content) > 50 else content
+        logger.info(f"[ADD_MEMORY] START | user_id={user_id} | content_len={len(content)} | skip_judge={skip_judge} | preview={content_preview}")
         
         db = SessionLocal()
         try:
@@ -1055,8 +1164,9 @@ class GraphMemoryService:
             db.add(memory_record)
             db.flush()
             memory_db_id = memory_record.id
+            logger.debug(f"[ADD_MEMORY] Memory record created | id={memory_db_id}")
         except Exception as e:
-            logger.error(f"Failed to create memory record: {e}")
+            logger.error(f"[ADD_MEMORY] Memory record failed | error={type(e).__name__}: {str(e)}")
             db.rollback()
             memory_db_id = None
         finally:
@@ -1064,9 +1174,11 @@ class GraphMemoryService:
                 db.close()
         
         facts = await self.extract_facts(content)
-        logger.info(f"Extracted {len(facts)} facts from content")
+        logger.info(f"[ADD_MEMORY] Facts extracted | count={len(facts)}")
         
         if not facts:
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.info(f"[ADD_MEMORY] COMPLETE | user_id={user_id} | duration={duration_ms}ms | result=no_facts")
             return {
                 "id": None,
                 "content": content,
@@ -1078,14 +1190,17 @@ class GraphMemoryService:
         fact_contents = [f.get("content", "") for f in facts if f.get("content")]
         
         if skip_judge:
+            logger.info(f"[ADD_MEMORY] SKIP_JUDGE mode | facts={len(facts)}")
             all_entities = []
             all_relations = []
             stored_facts = []
             
-            for fact in facts:
+            for i, fact in enumerate(facts):
                 fact_content = fact.get("content", "")
                 category = fact.get("category", "fact")
                 importance = fact.get("importance", "medium")
+                
+                logger.debug(f"[ADD_MEMORY] Processing fact {i+1}/{len(facts)} | {fact_content[:30]}...")
                 
                 extraction = await self.extract_entities_and_relations(fact_content, user_id)
                 entities = extraction.get("entities", [])
@@ -1112,7 +1227,7 @@ class GraphMemoryService:
                     db.add(fact_record)
                     db.commit()
                 except Exception as e:
-                    logger.error(f"Failed to save fact to DB: {e}")
+                    logger.error(f"[ADD_MEMORY] Fact DB save failed | error={type(e).__name__}: {str(e)}")
                     db.rollback()
                 finally:
                     db.close()
@@ -1128,6 +1243,9 @@ class GraphMemoryService:
             
             self.save_to_neo4j(user_id, all_entities, all_relations)
             
+            duration_ms = int((time.time() - start_time) * 1000)
+            logger.info(f"[ADD_MEMORY] COMPLETE | user_id={user_id} | duration={duration_ms}ms | mode=skip_judge | facts={len(stored_facts)} | entities={len(all_entities)} | relations={len(all_relations)}")
+            
             return {
                 "id": stored_facts[0].get("id") if stored_facts else None,
                 "content": content,
@@ -1138,7 +1256,10 @@ class GraphMemoryService:
                 "facts_count": len(stored_facts)
             }
         
+        logger.info(f"[ADD_MEMORY] JUDGE mode | searching related memories...")
         existing_memories = await self.search_related_memories(user_id, fact_contents, limit=5, score_threshold=0.7)
+        logger.info(f"[ADD_MEMORY] Related memories found | count={len(existing_memories)}")
+        
         judgment = await self.update_memory_with_judgment(user_id, fact_contents, existing_memories, content)
         
         memory_operations = judgment.get("memory", [])
@@ -1158,11 +1279,16 @@ class GraphMemoryService:
                         "stats": result["stats"]
                     }
                     db.commit()
+                    logger.debug(f"[ADD_MEMORY] Judgment updated | trace_id={trace_id}")
             except Exception as e:
-                logger.error(f"Failed to update judgment record with execution results: {e}")
+                logger.error(f"[ADD_MEMORY] Judgment update failed | trace_id={trace_id} | error={type(e).__name__}: {str(e)}")
                 db.rollback()
             finally:
                 db.close()
+        
+        duration_ms = int((time.time() - start_time) * 1000)
+        stats = result.get("stats", {})
+        logger.info(f"[ADD_MEMORY] COMPLETE | user_id={user_id} | duration={duration_ms}ms | mode=judge | trace_id={trace_id} | added={stats.get('added_count', 0)} | updated={stats.get('updated_count', 0)} | deleted={stats.get('deleted_count', 0)}")
         
         return {
             "id": result["added"][0].get("id") if result["added"] else None,

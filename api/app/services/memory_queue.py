@@ -6,6 +6,8 @@ Memory Queue Tasks - Celery 异步任务
 """
 import logging
 import asyncio
+import time
+import json
 from typing import Dict, Any, List, Optional
 from celery import shared_task
 
@@ -23,6 +25,30 @@ def run_async(coro):
         return loop.run_until_complete(coro)
     finally:
         loop.close()
+
+
+def _log_task_start(task_name: str, task_id: str, user_id: str, **kwargs):
+    """记录任务开始日志"""
+    extra_info = " | ".join([f"{k}={v}" for k, v in kwargs.items() if v is not None])
+    logger.info(f"[{task_name}] START | task_id={task_id} | user_id={user_id} | {extra_info}")
+
+
+def _log_task_end(task_name: str, task_id: str, user_id: str, duration_ms: int, success: bool, **kwargs):
+    """记录任务结束日志"""
+    status = "SUCCESS" if success else "FAILED"
+    extra_info = " | ".join([f"{k}={v}" for k, v in kwargs.items() if v is not None])
+    logger.info(f"[{task_name}] {status} | task_id={task_id} | user_id={user_id} | duration={duration_ms}ms | {extra_info}")
+
+
+def _log_task_error(task_name: str, task_id: str, user_id: str, error: Exception, retry_count: int = 0):
+    """记录任务错误日志"""
+    logger.error(f"[{task_name}] ERROR | task_id={task_id} | user_id={user_id} | retry={retry_count} | error={type(error).__name__}: {str(error)}")
+
+
+def _log_task_progress(task_name: str, task_id: str, user_id: str, current: int, total: int, message: str = ""):
+    """记录任务进度日志"""
+    progress_pct = int(current / total * 100) if total > 0 else 0
+    logger.info(f"[{task_name}] PROGRESS | task_id={task_id} | user_id={user_id} | {current}/{total} ({progress_pct}%) | {message}")
 
 
 @celery_app.task(
@@ -50,9 +76,18 @@ def add_memory_task(
     Returns:
         处理结果
     """
+    task_id = self.request.id
+    start_time = time.time()
+    content_preview = content[:50] + "..." if len(content) > 50 else content
+    
+    _log_task_start(
+        "ADD_MEMORY", task_id, user_id,
+        content_len=len(content),
+        skip_judge=skip_judge,
+        content_preview=content_preview
+    )
+    
     try:
-        logger.info(f"[Queue] Processing add_memory for user {user_id}")
-        
         result = run_async(
             graph_memory_service.add_memory(
                 user_id=user_id,
@@ -62,11 +97,26 @@ def add_memory_task(
             )
         )
         
-        logger.info(f"[Queue] Add memory completed: {result.get('stats', {})}")
+        stats = result.get('stats', {})
+        duration_ms = int((time.time() - start_time) * 1000)
+        
+        _log_task_end(
+            "ADD_MEMORY", task_id, user_id, duration_ms, True,
+            added=stats.get('added_count', 0),
+            updated=stats.get('updated_count', 0),
+            deleted=stats.get('deleted_count', 0),
+            trace_id=result.get('trace_id', '')
+        )
+        
         return result
         
     except Exception as e:
-        logger.error(f"[Queue] Add memory failed: {e}")
+        duration_ms = int((time.time() - start_time) * 1000)
+        retry_count = self.request.retries
+        
+        _log_task_error("ADD_MEMORY", task_id, user_id, e, retry_count)
+        _log_task_end("ADD_MEMORY", task_id, user_id, duration_ms, False, error=str(e))
+        
         raise self.retry(exc=e)
 
 
@@ -93,27 +143,72 @@ def batch_add_memory_task(
     Returns:
         处理结果列表
     """
+    task_id = self.request.id
+    start_time = time.time()
+    total_count = len(contents)
+    
+    _log_task_start(
+        "BATCH_ADD", task_id, user_id,
+        total_count=total_count
+    )
+    
+    results = []
+    success_count = 0
+    error_count = 0
+    
     try:
-        logger.info(f"[Queue] Processing batch_add for user {user_id}, count: {len(contents)}")
-        
-        results = []
         for i, content in enumerate(contents):
             metadata = metadatas[i] if metadatas and i < len(metadatas) else None
+            content_preview = content[:30] + "..." if len(content) > 30 else content
             
-            result = run_async(
-                graph_memory_service.add_memory(
-                    user_id=user_id,
-                    content=content,
-                    metadata=metadata
-                )
+            _log_task_progress(
+                "BATCH_ADD", task_id, user_id,
+                i + 1, total_count,
+                f"processing: {content_preview}"
             )
-            results.append(result)
+            
+            try:
+                result = run_async(
+                    graph_memory_service.add_memory(
+                        user_id=user_id,
+                        content=content,
+                        metadata=metadata
+                    )
+                )
+                results.append(result)
+                success_count += 1
+                
+                stats = result.get('stats', {})
+                logger.debug(f"[BATCH_ADD] Item {i+1}/{total_count} done | added={stats.get('added_count', 0)} | updated={stats.get('updated_count', 0)} | deleted={stats.get('deleted_count', 0)}")
+                
+            except Exception as item_error:
+                error_count += 1
+                logger.error(f"[BATCH_ADD] Item {i+1}/{total_count} failed | error={type(item_error).__name__}: {str(item_error)}")
+                results.append({
+                    "error": str(item_error),
+                    "content_preview": content_preview,
+                    "index": i
+                })
         
-        logger.info(f"[Queue] Batch add completed: {len(results)} items")
+        duration_ms = int((time.time() - start_time) * 1000)
+        avg_duration_ms = int(duration_ms / total_count) if total_count > 0 else 0
+        
+        _log_task_end(
+            "BATCH_ADD", task_id, user_id, duration_ms, error_count == 0,
+            success_count=success_count,
+            error_count=error_count,
+            avg_duration_ms=avg_duration_ms
+        )
+        
         return results
         
     except Exception as e:
-        logger.error(f"[Queue] Batch add failed: {e}")
+        duration_ms = int((time.time() - start_time) * 1000)
+        retry_count = self.request.retries
+        
+        _log_task_error("BATCH_ADD", task_id, user_id, e, retry_count)
+        _log_task_end("BATCH_ADD", task_id, user_id, duration_ms, False, processed=len(results), error=str(e))
+        
         raise self.retry(exc=e)
 
 
@@ -140,9 +235,17 @@ def update_memory_task(
     Returns:
         处理结果
     """
+    task_id = self.request.id
+    start_time = time.time()
+    content_preview = content[:50] + "..." if len(content) > 50 else content
+    
+    _log_task_start(
+        "UPDATE_MEMORY", task_id, user_id,
+        content_len=len(content),
+        content_preview=content_preview
+    )
+    
     try:
-        logger.info(f"[Queue] Processing update_memory for user {user_id}")
-        
         result = run_async(
             graph_memory_service.add_memory(
                 user_id=user_id,
@@ -151,11 +254,26 @@ def update_memory_task(
             )
         )
         
-        logger.info(f"[Queue] Update memory completed: {result.get('stats', {})}")
+        stats = result.get('stats', {})
+        duration_ms = int((time.time() - start_time) * 1000)
+        
+        _log_task_end(
+            "UPDATE_MEMORY", task_id, user_id, duration_ms, True,
+            added=stats.get('added_count', 0),
+            updated=stats.get('updated_count', 0),
+            deleted=stats.get('deleted_count', 0),
+            trace_id=result.get('trace_id', '')
+        )
+        
         return result
         
     except Exception as e:
-        logger.error(f"[Queue] Update memory failed: {e}")
+        duration_ms = int((time.time() - start_time) * 1000)
+        retry_count = self.request.retries
+        
+        _log_task_error("UPDATE_MEMORY", task_id, user_id, e, retry_count)
+        _log_task_end("UPDATE_MEMORY", task_id, user_id, duration_ms, False, error=str(e))
+        
         raise self.retry(exc=e)
 
 
@@ -182,9 +300,17 @@ def delete_memory_task(
     Returns:
         处理结果
     """
+    task_id = self.request.id
+    start_time = time.time()
+    content_preview = content[:50] + "..." if len(content) > 50 else content
+    
+    _log_task_start(
+        "DELETE_MEMORY", task_id, user_id,
+        content_len=len(content),
+        content_preview=content_preview
+    )
+    
     try:
-        logger.info(f"[Queue] Processing delete_memory for user {user_id}")
-        
         result = run_async(
             graph_memory_service.add_memory(
                 user_id=user_id,
@@ -193,9 +319,24 @@ def delete_memory_task(
             )
         )
         
-        logger.info(f"[Queue] Delete memory completed: {result.get('stats', {})}")
+        stats = result.get('stats', {})
+        duration_ms = int((time.time() - start_time) * 1000)
+        
+        _log_task_end(
+            "DELETE_MEMORY", task_id, user_id, duration_ms, True,
+            added=stats.get('added_count', 0),
+            updated=stats.get('updated_count', 0),
+            deleted=stats.get('deleted_count', 0),
+            trace_id=result.get('trace_id', '')
+        )
+        
         return result
         
     except Exception as e:
-        logger.error(f"[Queue] Delete memory failed: {e}")
+        duration_ms = int((time.time() - start_time) * 1000)
+        retry_count = self.request.retries
+        
+        _log_task_error("DELETE_MEMORY", task_id, user_id, e, retry_count)
+        _log_task_end("DELETE_MEMORY", task_id, user_id, duration_ms, False, error=str(e))
+        
         raise self.retry(exc=e)
