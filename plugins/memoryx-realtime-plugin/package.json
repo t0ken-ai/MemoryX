@@ -14,7 +14,12 @@
     "build": "tsc",
     "prepare": "npm run build"
   },
-  "keywords": ["openclaw", "memoryx", "memory", "plugin"],
+  "keywords": [
+    "openclaw",
+    "memoryx",
+    "memory",
+    "plugin"
+  ],
   "author": "MemoryX Team",
   "license": "MIT",
   "repository": {
@@ -23,10 +28,17 @@
     "directory": "plugins/memoryx-realtime-plugin"
   },
   "openclaw": {
-    "extensions": ["./dist/index.js"]
+    "extensions": [
+      "./dist/index.js"
+    ]
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "onnxruntime-node": "^1.24.1",
+    "onnxruntime-web": "^1.24.1"
   }
 }

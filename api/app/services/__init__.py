@@ -23,15 +23,9 @@ from app.services.scoring import (
     create_custom_scorer
 )
 
-from app.services.memory_service import (
-    MemoryService,
-    Memory,
-    SearchResult,
-    EmbeddingService,
-    get_memory_service,
-    init_memory_service,
-    COLLECTION_NAME,
-    VECTOR_SIZE
+from app.services.memory_core.graph_memory_service import (
+    graph_memory_service,
+    GraphMemoryService
 )
 
 from app.services.temporal_kg import (
@@ -46,7 +40,6 @@ from app.services.temporal_kg import (
 )
 
 __all__ = [
-    # Classification
     "classify_memory",
     "quick_classify",
     "ClassificationResult",
@@ -56,7 +49,6 @@ __all__ = [
     "RuleBasedClassifier",
     "HybridClassifier",
     
-    # Scoring
     "calculate_memory_score",
     "calculate_recency",
     "calculate_relevance",
@@ -66,17 +58,9 @@ __all__ = [
     "get_default_weights",
     "create_custom_scorer",
     
-    # Memory Service
-    "MemoryService",
-    "Memory",
-    "SearchResult",
-    "EmbeddingService",
-    "get_memory_service",
-    "init_memory_service",
-    "COLLECTION_NAME",
-    "VECTOR_SIZE",
+    "graph_memory_service",
+    "GraphMemoryService",
     
-    # Temporal KG
     "TemporalKG",
     "Entity",
     "Relation",

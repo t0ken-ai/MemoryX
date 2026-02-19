@@ -23,6 +23,9 @@ httpx>=0.24.0
 # Vector Store
 qdrant-client>=1.6.0
 
+# Graph Store
+neo4j>=5.0.0
+
 # Configuration
 pydantic-settings
 
