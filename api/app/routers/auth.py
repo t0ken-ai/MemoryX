@@ -8,7 +8,6 @@ from app.core.database import User, APIKey
 from datetime import timedelta
 from app.core.config import get_settings
 import secrets
-import hashlib
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")

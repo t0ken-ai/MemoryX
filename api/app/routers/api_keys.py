@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List
-import hashlib
 import secrets
 from app.core.database import get_db
 from app.routers.auth import get_current_user

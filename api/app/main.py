@@ -11,7 +11,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from sqlalchemy.orm import Session
 import httpx
-import hashlib
 import os
 import logging
 

@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 import secrets
-import hashlib
 
 from app.core.database import get_db, User, Project, APIKey
 

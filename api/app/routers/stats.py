@@ -4,7 +4,6 @@ from sqlalchemy import func
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime, timedelta
-import hashlib
 
 from app.core.database import get_db, APIKey
 from app.core.database import Project
