@@ -10,7 +10,6 @@
  * - Precise token counting with tiktoken
  */
 
-import { getEncoding, Tiktoken } from "js-tiktoken";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -154,35 +153,22 @@ class SQLiteStorage {
 
 class ConversationBuffer {
     private messages: Message[] = [];
-    private tokenCount: number = 0;
     private roundCount: number = 0;
     private lastRole: string = "";
     private conversationId: string = "";
     private startedAt: number = Date.now();
     private lastActivityAt: number = Date.now();
-    private encoder: Tiktoken | null = null;
     
     private readonly ROUND_THRESHOLD = 2;
     private readonly TIMEOUT_MS = 30 * 60 * 1000;
-    private readonly MAX_TOKENS_PER_MESSAGE = 8000;
+    private readonly MAX_CHARS_PER_MESSAGE = 32000;
     
     constructor() {
         this.conversationId = this.generateId();
     }
     
-    private getEncoder(): Tiktoken {
-        if (!this.encoder) {
-            this.encoder = getEncoding("cl100k_base");
-        }
-        return this.encoder;
-    }
-    
     private generateId(): string {
         return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-    
-    private countTokens(text: string): number {
-        return this.getEncoder().encode(text).length;
     }
     
     addMessage(role: string, content: string): boolean {
@@ -190,20 +176,18 @@ class ConversationBuffer {
             return false;
         }
         
-        const tokens = this.countTokens(content);
-        if (tokens > this.MAX_TOKENS_PER_MESSAGE) {
+        if (content.length > this.MAX_CHARS_PER_MESSAGE) {
             return false;
         }
         
         const message: Message = {
             role,
             content,
-            tokens,
+            tokens: 0,
             timestamp: Date.now()
         };
         
         this.messages.push(message);
-        this.tokenCount += tokens;
         this.lastActivityAt = Date.now();
         
         if (role === "assistant" && this.lastRole === "user") {
@@ -231,15 +215,13 @@ class ConversationBuffer {
         return false;
     }
     
-    flush(): { conversation_id: string; messages: Message[]; total_tokens: number } {
+    flush(): { conversation_id: string; messages: Message[] } {
         const data = {
             conversation_id: this.conversationId,
-            messages: [...this.messages],
-            total_tokens: this.tokenCount
+            messages: [...this.messages]
         };
         
         this.messages = [];
-        this.tokenCount = 0;
         this.roundCount = 0;
         this.lastRole = "";
         this.conversationId = this.generateId();
@@ -249,17 +231,16 @@ class ConversationBuffer {
         return data;
     }
     
-    forceFlush(): { conversation_id: string; messages: Message[]; total_tokens: number } | null {
+    forceFlush(): { conversation_id: string; messages: Message[] } | null {
         if (this.messages.length === 0) {
             return null;
         }
         return this.flush();
     }
     
-    getStatus(): { messageCount: number; tokenCount: number; conversationId: string } {
+    getStatus(): { messageCount: number; conversationId: string } {
         return {
             messageCount: this.messages.length,
-            tokenCount: this.tokenCount,
             conversationId: this.conversationId
         };
     }
@@ -499,7 +480,7 @@ class MemoryXPlugin {
     public getStatus(): { 
         initialized: boolean; 
         hasApiKey: boolean; 
-        bufferStatus: { messageCount: number; tokenCount: number } 
+        bufferStatus: { messageCount: number; conversationId: string } 
     } {
         return {
             initialized: this.config.initialized,

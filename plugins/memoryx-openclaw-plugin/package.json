@@ -1,6 +1,6 @@
 {
   "name": "@t0ken.ai/memoryx-openclaw-plugin",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "MemoryX real-time memory capture and recall plugin for OpenClaw",
   "type": "module",
   "author": "MemoryX Team",
@@ -36,10 +36,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.8.1",
-    "better-sqlite3": "^11.0.0",
-    "js-tiktoken": "^1.0.21",
-    "onnxruntime-node": "^1.24.1",
-    "onnxruntime-web": "^1.24.1"
+    "better-sqlite3": "^11.0.0"
   }
 }
