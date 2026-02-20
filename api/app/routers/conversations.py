@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import List, Optional, Literal
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 import logging
 import httpx
@@ -23,17 +23,15 @@ router = APIRouter(prefix="/v1", tags=["conversations"])
 
 
 class MessageItem(BaseModel):
-    role: str
-    content: str
-    tokens: Optional[int] = 0
-    timestamp: Optional[int] = None
+    role: Literal["user", "assistant"] = Field(..., description="消息角色：user 或 assistant")
+    content: str = Field(..., min_length=1, description="消息内容")
+    tokens: Optional[int] = Field(default=0, description="Token 数量")
+    timestamp: Optional[int] = Field(default=None, description="时间戳")
 
 
 class ConversationFlushRequest(BaseModel):
-    conversation_id: Optional[str] = None
-    messages: List[MessageItem]
-    total_tokens: Optional[int] = 0
-    client_model_version: Optional[int] = 1
+    conversation_id: Optional[str] = Field(default=None, description="对话ID")
+    messages: List[MessageItem] = Field(..., min_length=1, description="消息列表，每条包含 role、content、timestamp")
 
 
 class SensitiveFilterResult(BaseModel):
@@ -120,13 +118,10 @@ def process_conversation_task(conversation_data: dict):
         user_id = conversation_data["user_id"]
         messages = conversation_data["messages"]
         
-        combined_content = "\n".join([
-            f"{m['role']}: {m['content']}" 
-            for m in messages
-        ])
-        
         import asyncio
-        filter_result = asyncio.run(filter_sensitive_with_llm(combined_content))
+        import json
+        messages_json = json.dumps(messages, ensure_ascii=False, indent=2)
+        filter_result = asyncio.run(filter_sensitive_with_llm(messages_json))
         
         if filter_result.has_sensitive:
             logger.info(f"LLM filtered {filter_result.sensitive_count} sensitive items for user {user_id}")
@@ -137,7 +132,6 @@ def process_conversation_task(conversation_data: dict):
             metadata={
                 "conversation_id": conversation_data.get("conversation_id"),
                 "message_count": len(messages),
-                "total_tokens": conversation_data.get("total_tokens", 0),
                 "has_sensitive": filter_result.has_sensitive,
                 "source": "conversation_flush",
                 "project_id": conversation_data.get("project_id", "default")
@@ -187,14 +181,14 @@ async def flush_conversation(
     批量提交对话 - 触发记忆提取
     
     流程：
-    1. 接收缓冲的对话消息
-    2. 敏感信息过滤
-    3. 后台异步处理：LLM 提取记忆 + 向量化 + 图构建
+    1. 接收 messages JSON 数组
+    2. 格式校验（每条消息必须有 role、content、timestamp）
+    3. 后台异步处理：敏感信息过滤 + LLM 提取记忆 + 向量化 + 图构建
     """
     user_id, tier, quota, api_key = user_data
     
     if not request.messages or len(request.messages) == 0:
-        raise HTTPException(status_code=400, detail="No messages provided")
+        raise HTTPException(status_code=400, detail="messages field is required")
     
     can_create, remaining = quota.can_create_memory(tier)
     if not can_create:
@@ -207,7 +201,6 @@ async def flush_conversation(
         "user_id": str(user_id),
         "conversation_id": request.conversation_id,
         "messages": [m.model_dump() for m in request.messages],
-        "total_tokens": request.total_tokens or 0,
         "project_id": "default"
     }
     

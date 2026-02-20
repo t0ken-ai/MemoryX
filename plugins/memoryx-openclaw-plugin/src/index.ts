@@ -572,7 +572,10 @@ class MemoryXPlugin {
                     "Content-Type": "application/json",
                     "X-API-Key": this.config.apiKey
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify({
+                    conversation_id: data.conversation_id,
+                    messages: data.messages
+                })
             });
             
             if (!response.ok) {
