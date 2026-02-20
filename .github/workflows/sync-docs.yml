@@ -1,4 +1,4 @@
-# Sync Docs - 同步 API 文档到文档仓库
+# Sync Docs - 同步 OpenAPI 文档到 docs.t0ken.ai
 #
 # 用途：自动生成 OpenAPI 文档并同步到 t0ken-ai/docs 仓库
 # 
@@ -8,11 +8,12 @@
 # 工作流程：
 #   1. 检出 MemoryX 仓库
 #   2. 生成 OpenAPI 文档 (openapi.json)
-#   3. 检出 docs 仓库
+#   3. 检出 t0ken-ai/docs 仓库
 #   4. 复制 openapi.json 到 docs 仓库
 #   5. 提交并推送更改
 #
 # 目标仓库：t0ken-ai/docs
+# 目标站点：https://docs.t0ken.ai (Mintlify)
 # 生成文件：openapi.json
 
 name: Sync Docs
