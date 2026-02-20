@@ -40,18 +40,23 @@ class SensitiveFilterResult(BaseModel):
     sensitive_count: int
 
 
-SENSITIVE_FILTER_PROMPT = """分析以下对话，识别并标记敏感信息：
-只识别以下类型：
-- 银行卡卡号（如：6222xxxxxxxxxxxx）
-- 密码（如：密码是xxx、我的密码是xxx）
+SENSITIVE_FILTER_PROMPT = """请将以下对话中的敏感信息替换为[已过滤]：
 
-注意：姓名、地址、手机号码、身份证号不需要过滤，这些是正常信息。
+必须替换以下类型：
+1. 银行卡卡号：任何16-19位数字组成的卡号（如62220000111122223333、6225881234567890等，替换为[已过滤]）
+2. 密码：密码后面跟的内容（如"密码是abc123"替换为"密码是[已过滤]"）
 
-对话内容：
+不要替换以下内容：
+- 姓名（如张三、李四、测试用户）
+- 地址（如北京市朝阳区、深圳南山区）
+- 手机号码（如13812345678、18811112222）
+- 身份证号
+
+原始内容：
 {conversation}
 
-请严格按以下 JSON 格式返回，不要包含其他内容：
-{{"has_sensitive": true或false, "sensitive_spans": [{{"start": 起始位置, "end": 结束位置, "type": "类型", "replacement": "[已过滤]"}}], "safe_content": "过滤后的安全内容"}}"""
+请严格按以下 JSON 格式返回：
+{{"has_sensitive": true或false, "safe_content": "替换敏感信息后的内容"}}"""
 
 
 async def filter_sensitive_with_llm(content: str) -> SensitiveFilterResult:
@@ -90,11 +95,13 @@ async def filter_sensitive_with_llm(content: str) -> SensitiveFilterResult:
             llm_response = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
             
             result = json.loads(llm_response)
+            safe_content = result.get("safe_content", content)
+            sensitive_count = safe_content.count("[已过滤]") if safe_content else 0
             
             return SensitiveFilterResult(
                 has_sensitive=result.get("has_sensitive", False),
-                filtered_content=result.get("safe_content", content),
-                sensitive_count=len(result.get("sensitive_spans", []))
+                filtered_content=safe_content,
+                sensitive_count=sensitive_count
             )
             
     except json.JSONDecodeError as e:
