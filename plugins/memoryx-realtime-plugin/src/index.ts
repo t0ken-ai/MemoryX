@@ -414,83 +414,78 @@ class MemoryXPlugin {
 
 let plugin: MemoryXPlugin;
 
-export async function onMessage(
-    message: string,
-    context: Record<string, any>
-): Promise<{ context: Record<string, any> }> {
-    if (message && plugin) {
-        await plugin.onMessage("user", message);
-    }
-    return { context };
-}
-
-export function onResponse(
-    response: string,
-    context: Record<string, any>
-): string {
-    return response;
-}
-
-export function register(api: any, pluginConfig?: PluginConfig): void {
-    api.logger.info("[MemoryX] Plugin registering (Phase 1 - Cloud with Buffer)...");
+export default {
+    id: "@t0ken.ai/memoryx-openclaw-plugin",
+    name: "MemoryX Real-time Plugin",
+    version: "1.0.4",
+    description: "Real-time memory capture and recall for OpenClaw",
     
-    if (pluginConfig?.apiBaseUrl) {
-        api.logger.info(`[MemoryX] Using custom API base URL: ${pluginConfig.apiBaseUrl}`);
-    }
-    
-    plugin = new MemoryXPlugin(pluginConfig);
-    
-    api.on("message_received", async (event: any, ctx: any) => {
-        const { content, from, timestamp } = event;
-        if (content && plugin) {
-            await plugin.onMessage("user", content);
-        }
-    });
-    
-    api.on("assistant_response", async (event: any, ctx: any) => {
-        const { content } = event;
-        if (content && plugin) {
-            await plugin.onMessage("assistant", content);
-        }
-    });
-    
-    api.on("before_agent_start", async (event: any, ctx: any) => {
-        const { prompt } = event;
-        if (!prompt || prompt.length < 2 || !plugin) return;
+    register(api: any, pluginConfig?: PluginConfig): void {
+        api.logger.info("[MemoryX] Plugin registering...");
         
-        try {
-            const result = await plugin.recall(prompt, 5);
-            
-            if (result.isLimited) {
-                api.logger.warn(`[MemoryX] ${result.upgradeHint}`);
-                return {
-                    prependContext: `[系统提示] ${result.upgradeHint}\n`
-                };
+        if (pluginConfig?.apiBaseUrl) {
+            api.logger.info(`[MemoryX] API Base: \`${pluginConfig.apiBaseUrl}\``);
+        }
+        
+        const storedConfig = localStorage.getItem("memoryx_config");
+        if (storedConfig) {
+            api.logger.info(`[MemoryX] Database: ${storedConfig.split('"apiBaseUrl"')[0].match(/"([^"]+)"/)?.[1] || 'unknown'}`);
+        }
+        
+        plugin = new MemoryXPlugin(pluginConfig);
+        
+        api.on("message_received", async (event: any, ctx: any) => {
+            const { content, from, timestamp } = event;
+            if (content && plugin) {
+                await plugin.onMessage("user", content);
             }
+        });
+        
+        api.on("assistant_response", async (event: any, ctx: any) => {
+            const { content } = event;
+            if (content && plugin) {
+                await plugin.onMessage("assistant", content);
+            }
+        });
+        
+        api.on("before_agent_start", async (event: any, ctx: any) => {
+            const { prompt } = event;
+            if (!prompt || prompt.length < 2 || !plugin) return;
             
-            if (result.memories.length === 0) return;
-            
-            const memories = result.memories
-                .map(m => `- [${m.category}] ${m.content}`)
-                .join("\n");
-            
-            api.logger.info(`[MemoryX] Recalled ${result.memories.length} memories from cloud`);
-            
-            return {
-                prependContext: `[相关记忆]\n${memories}\n[End of memories]\n`
-            };
-        } catch (error) {
-            api.logger.warn(`[MemoryX] Recall failed: ${error}`);
-        }
-    });
-    
-    api.on("conversation_end", async (event: any, ctx: any) => {
-        if (plugin) {
-            await plugin.endConversation();
-        }
-    });
-    
-    api.logger.info("[MemoryX] Plugin registered successfully");
-}
+            try {
+                const result = await plugin.recall(prompt, 5);
+                
+                if (result.isLimited) {
+                    api.logger.warn(`[MemoryX] ${result.upgradeHint}`);
+                    return {
+                        prependContext: `[系统提示] ${result.upgradeHint}\n`
+                    };
+                }
+                
+                if (result.memories.length === 0) return;
+                
+                const memories = result.memories
+                    .map(m => `- [${m.category}] ${m.content}`)
+                    .join("\n");
+                
+                api.logger.info(`[MemoryX] Recalled ${result.memories.length} memories from cloud`);
+                
+                return {
+                    prependContext: `[相关记忆]\n${memories}\n[End of memories]\n`
+                };
+            } catch (error) {
+                api.logger.warn(`[MemoryX] Recall failed: ${error}`);
+            }
+        });
+        
+        api.on("conversation_end", async (event: any, ctx: any) => {
+            if (plugin) {
+                await plugin.endConversation();
+            }
+        });
+        
+        api.logger.info("[MemoryX] Plugin registered successfully");
+    }
+};
 
 export { MemoryXPlugin, ConversationBuffer };
