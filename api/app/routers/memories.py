@@ -252,7 +252,7 @@ async def search_memories(
         return {
             "success": True,
             "data": context.get("vector_memories", []),
-            "graph_context": context.get("graph_entities", []),
+            "related_memories": context.get("related_memories", []),
             "extracted_entities": context.get("extracted_entities", []),
             "query": query.query,
             "remaining_quota": new_remaining,

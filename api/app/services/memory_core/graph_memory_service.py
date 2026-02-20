@@ -1401,20 +1401,72 @@ class GraphMemoryService:
     async def get_context_for_query(self, user_id: str, query: str, limit: int = 5) -> Dict[str, Any]:
         vector_results = await self.search_memories(user_id, query, limit)
         
-        entity_names_set = set()
-        for mem in vector_results:
-            for name in mem.get("entity_names", []):
-                entity_names_set.add(name)
+        vector_ids = [r["id"] for r in vector_results]
+        direct_fact_ids = set()
+        for r in vector_results:
+            if r.get("fact_id"):
+                direct_fact_ids.add(r["fact_id"])
         
-        graph_results = []
-        for entity_name in list(entity_names_set)[:5]:
+        all_entity_names = set()
+        db = SessionLocal()
+        try:
+            if vector_ids:
+                fact_records = db.query(Fact).filter(Fact.vector_id.in_(vector_ids)).all()
+                for fact in fact_records:
+                    for entity in (fact.entities or []):
+                        if entity.get("name"):
+                            all_entity_names.add(entity["name"])
+        except Exception as e:
+            logger.error(f"Failed to query facts for entities: {e}")
+        finally:
+            db.close()
+        
+        related_entity_names = set()
+        for entity_name in list(all_entity_names)[:10]:
             graph_data = self.search_graph(user_id, entity_name=entity_name, limit=5)
-            graph_results.extend(graph_data)
+            for item in graph_data:
+                if item.get("entity"):
+                    related_entity_names.add(item["entity"])
+                for rel in (item.get("outgoing") or []):
+                    if rel.get("target") and rel["target"] is not None:
+                        related_entity_names.add(rel["target"])
+                for rel in (item.get("incoming") or []):
+                    if rel.get("source") and rel["source"] is not None:
+                        related_entity_names.add(rel["source"])
+        
+        all_related_entities = all_entity_names | related_entity_names
+        
+        related_facts = []
+        db = SessionLocal()
+        try:
+            if all_related_entities:
+                all_facts = db.query(Fact).filter(Fact.user_id == int(user_id)).all()
+                for fact in all_facts:
+                    if fact.id in direct_fact_ids:
+                        continue
+                    fact_entities = fact.entities or []
+                    for entity in fact_entities:
+                        if entity.get("name") in all_related_entities:
+                            related_facts.append({
+                                "id": fact.vector_id,
+                                "memory": fact.content,
+                                "fact_id": fact.id,
+                                "entities": fact_entities,
+                                "relations": fact.relations or [],
+                                "category": fact.category,
+                                "importance": fact.importance,
+                                "score": 0.0
+                            })
+                            break
+        except Exception as e:
+            logger.error(f"Failed to query related facts: {e}")
+        finally:
+            db.close()
         
         return {
             "vector_memories": vector_results,
-            "graph_entities": graph_results,
-            "extracted_entities": [{"name": name} for name in list(entity_names_set)[:10]]
+            "related_memories": related_facts,
+            "extracted_entities": [{"name": name} for name in list(all_related_entities)[:20]]
         }
 
 
