@@ -7,7 +7,9 @@
  * - Auto-register and quota handling
  * - Sensitive data filtered on server
  * - Configurable API base URL
+ * - Precise token counting with tiktoken
  */
+import { getEncoding } from "js-tiktoken";
 const DEFAULT_API_BASE = "https://t0ken.ai/api";
 class ConversationBuffer {
     messages = [];
@@ -15,25 +17,25 @@ class ConversationBuffer {
     conversationId = "";
     startedAt = Date.now();
     lastActivityAt = Date.now();
+    encoder;
     TOKEN_THRESHOLD = 200;
-    TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
+    TIMEOUT_MS = 30 * 60 * 1000;
     MAX_TOKENS_PER_MESSAGE = 8000;
     constructor() {
         this.conversationId = this.generateId();
+        this.encoder = getEncoding("cl100k_base");
     }
     generateId() {
         return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    estimateTokens(text) {
-        const chineseChars = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
-        const otherChars = text.length - chineseChars;
-        return Math.ceil(chineseChars * 1.5 + otherChars / 4);
+    countTokens(text) {
+        return this.encoder.encode(text).length;
     }
     addMessage(role, content) {
         if (!content || content.length < 2) {
             return false;
         }
-        const tokens = this.estimateTokens(content);
+        const tokens = this.countTokens(content);
         if (tokens > this.MAX_TOKENS_PER_MESSAGE) {
             return false;
         }

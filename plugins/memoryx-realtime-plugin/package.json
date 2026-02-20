@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^3.8.1",
+    "js-tiktoken": "^1.0.21",
     "onnxruntime-node": "^1.24.1",
     "onnxruntime-web": "^1.24.1"
   }
