@@ -30,7 +30,7 @@ limitations under the License.
 
 ## OpenMemory
 
-MemoryX's memory architecture was inspired by [OpenMemory](https://github.com/mem0ai/openmemory).
+MemoryX's memory architecture was inspired by [OpenMemory](https://github.com/mem0ai/mem0/tree/main/openmemory).
 
 ```
 MIT License
