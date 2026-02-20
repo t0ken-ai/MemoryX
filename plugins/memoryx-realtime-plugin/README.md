@@ -11,60 +11,33 @@ Official MemoryX plugin for OpenClaw. Enables long-term memory for agents by rec
 
 ## Install
 
-### Option A — NPM (Recommended)
-
 ```bash
 openclaw plugins install @t0ken.ai/memoryx-openclaw-plugin
 openclaw gateway restart
 ```
 
-Make sure it's enabled in `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "@t0ken.ai/memoryx-openclaw-plugin": { "enabled": true }
-    }
-  }
-}
-```
-
-### Option B — GitHub
-
-```bash
-openclaw plugins install github:t0ken-ai/MemoryX#plugins/memoryx-realtime-plugin
-openclaw gateway restart
-```
-
-### Option C — Local path
-
-Copy this folder into an OpenClaw plugin path (e.g. `~/.openclaw/extensions/`) or use `plugins.load.paths` to point at it.
-
-Example `~/.openclaw/openclaw.json`:
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "memoryx-openclaw-plugin": { "enabled": true }
-    },
-    "load": { "paths": ["/path/to/memoryx-openclaw-plugin"] }
-  }
-}
-```
-
-Restart the gateway after config changes.
-
 ## Configuration
 
-### Plugin Config
-
-In `plugins.entries.memoryx-openclaw-plugin.config`:
+Edit `~/.openclaw/openclaw.json`:
 
 ```json
 {
-  "apiBaseUrl": "https://t0ken.ai/api"
+  "plugins": {
+    "slots": {
+      "memory": "memoryx-openclaw-plugin"
+    },
+    "entries": {
+      "memoryx-openclaw-plugin": {
+        "enabled": true,
+        "config": {
+          "apiBaseUrl": "https://t0ken.ai/api"
+        }
+      },
+      "memory-core": {
+        "enabled": false
+      }
+    }
+  }
 }
 ```
 
@@ -72,13 +45,30 @@ For self-hosted MemoryX:
 
 ```json
 {
-  "apiBaseUrl": "http://192.168.31.65:8000/api"
+  "plugins": {
+    "slots": {
+      "memory": "memoryx-openclaw-plugin"
+    },
+    "entries": {
+      "memoryx-openclaw-plugin": {
+        "enabled": true,
+        "config": {
+          "apiBaseUrl": "http://192.168.31.65:8000/api"
+        }
+      },
+      "memory-core": {
+        "enabled": false
+      }
+    }
+  }
 }
 ```
 
-### Environment Variables
+Restart the gateway after config changes:
 
-The plugin stores credentials locally in `~/.t0ken/memoryx.sqlite`.
+```bash
+openclaw gateway restart
+```
 
 ## How it Works
 
