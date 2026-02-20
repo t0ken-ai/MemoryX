@@ -14,11 +14,12 @@ const DEFAULT_API_BASE = "https://t0ken.ai/api";
 class ConversationBuffer {
     messages = [];
     tokenCount = 0;
+    userMessageCount = 0;
     conversationId = "";
     startedAt = Date.now();
     lastActivityAt = Date.now();
     encoder;
-    MESSAGE_THRESHOLD = 4;
+    USER_MESSAGE_THRESHOLD = 2;
     TIMEOUT_MS = 30 * 60 * 1000;
     MAX_TOKENS_PER_MESSAGE = 8000;
     constructor() {
@@ -48,13 +49,16 @@ class ConversationBuffer {
         this.messages.push(message);
         this.tokenCount += tokens;
         this.lastActivityAt = Date.now();
-        return this.messages.length >= this.MESSAGE_THRESHOLD;
+        if (role === "user") {
+            this.userMessageCount++;
+        }
+        return this.userMessageCount >= this.USER_MESSAGE_THRESHOLD;
     }
     shouldFlush() {
         if (this.messages.length === 0) {
             return false;
         }
-        if (this.messages.length >= this.MESSAGE_THRESHOLD) {
+        if (this.userMessageCount >= this.USER_MESSAGE_THRESHOLD) {
             return true;
         }
         const elapsed = Date.now() - this.lastActivityAt;
@@ -71,6 +75,7 @@ class ConversationBuffer {
         };
         this.messages = [];
         this.tokenCount = 0;
+        this.userMessageCount = 0;
         this.conversationId = this.generateId();
         this.startedAt = Date.now();
         this.lastActivityAt = Date.now();

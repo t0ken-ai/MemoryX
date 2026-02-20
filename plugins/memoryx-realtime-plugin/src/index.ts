@@ -53,12 +53,13 @@ interface RecallResult {
 class ConversationBuffer {
     private messages: Message[] = [];
     private tokenCount: number = 0;
+    private userMessageCount: number = 0;
     private conversationId: string = "";
     private startedAt: number = Date.now();
     private lastActivityAt: number = Date.now();
     private encoder: Tiktoken;
     
-    private readonly MESSAGE_THRESHOLD = 4;
+    private readonly USER_MESSAGE_THRESHOLD = 2;
     private readonly TIMEOUT_MS = 30 * 60 * 1000;
     private readonly MAX_TOKENS_PER_MESSAGE = 8000;
     
@@ -96,7 +97,11 @@ class ConversationBuffer {
         this.tokenCount += tokens;
         this.lastActivityAt = Date.now();
         
-        return this.messages.length >= this.MESSAGE_THRESHOLD;
+        if (role === "user") {
+            this.userMessageCount++;
+        }
+        
+        return this.userMessageCount >= this.USER_MESSAGE_THRESHOLD;
     }
     
     shouldFlush(): boolean {
@@ -104,7 +109,7 @@ class ConversationBuffer {
             return false;
         }
         
-        if (this.messages.length >= this.MESSAGE_THRESHOLD) {
+        if (this.userMessageCount >= this.USER_MESSAGE_THRESHOLD) {
             return true;
         }
         
@@ -125,6 +130,7 @@ class ConversationBuffer {
         
         this.messages = [];
         this.tokenCount = 0;
+        this.userMessageCount = 0;
         this.conversationId = this.generateId();
         this.startedAt = Date.now();
         this.lastActivityAt = Date.now();
