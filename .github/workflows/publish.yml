@@ -1,3 +1,13 @@
+# Publish to PyPI - 发布 Python 包到 PyPI
+#
+# 用途：发布 MemoryX Python SDK 到 PyPI
+# 
+# 触发条件：
+#   - push tag v* (如 v1.0.0)
+#
+# 发布包名：t0ken-memoryx
+# PyPI 地址：https://pypi.org/project/t0ken-memoryx/
+
 name: Publish to PyPI
 
 on:

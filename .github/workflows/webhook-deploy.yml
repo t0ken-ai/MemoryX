@@ -1,3 +1,18 @@
+# Webhook Deploy - 可重用的 Webhook 部署触发器
+# 
+# 用途：被其他工作流调用，触发服务器端的部署 webhook
+# 调用方：build-api.yml
+# 
+# 输入参数：
+#   - deploy_type: 部署类型 (alpha/release)
+#   - image: Docker 镜像地址 (可选)
+#   - sha: Git commit SHA
+#   - ref: Git ref
+#
+# 服务器端处理：
+#   - alpha → 31.66 测试环境
+#   - release → 31.65 生产环境
+
 name: Webhook Deploy
 
 on:

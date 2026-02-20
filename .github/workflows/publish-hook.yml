@@ -1,3 +1,14 @@
+# Publish OpenClaw Hook to NPM - 发布 OpenClaw Hook 到 NPM
+#
+# 用途：发布 OpenClaw Hook 包到 NPM
+# 
+# 触发条件：
+#   - push tag hook-v* (如 hook-v1.0.0)
+#
+# Hook 目录：openclaw-hook/
+# 发布包名：@t0ken.ai/openclaw-hook
+# NPM 地址：https://www.npmjs.com/package/@t0ken.ai/openclaw-hook
+
 name: Publish OpenClaw Hook to NPM
 
 on:

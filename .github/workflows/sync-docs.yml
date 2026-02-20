@@ -1,3 +1,20 @@
+# Sync Docs - 同步 API 文档到文档仓库
+#
+# 用途：自动生成 OpenAPI 文档并同步到 t0ken-ai/docs 仓库
+# 
+# 触发条件：
+#   - push to main 且路径为 api/** 或 sdk/**
+#
+# 工作流程：
+#   1. 检出 MemoryX 仓库
+#   2. 生成 OpenAPI 文档 (openapi.json)
+#   3. 检出 docs 仓库
+#   4. 复制 openapi.json 到 docs 仓库
+#   5. 提交并推送更改
+#
+# 目标仓库：t0ken-ai/docs
+# 生成文件：openapi.json
+
 name: Sync Docs
 on:
   push:
@@ -41,7 +58,6 @@ jobs:
           git config user.email "assistant@openclaw.ai"
           git add openapi.json
           
-          # Check if there are changes
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
