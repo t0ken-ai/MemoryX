@@ -757,10 +757,14 @@
                 if (tier === 'pro') {
                     tierEl.textContent = 'PRO';
                     tierEl.className = 'px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-xs font-medium';
-                    upgradeBtn.style.display = 'none';
+                    upgradeBtn.textContent = 'Manage Subscription';
+                    upgradeBtn.onclick = manageSubscription;
+                    upgradeBtn.style.display = 'block';
                 } else {
                     tierEl.textContent = 'FREE';
                     tierEl.className = 'px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium';
+                    upgradeBtn.textContent = 'Upgrade to Pro - $9.9/mo';
+                    upgradeBtn.onclick = showUpgradeModal;
                     upgradeBtn.style.display = 'block';
                 }
                 
@@ -1145,8 +1149,32 @@
             showToast('Data refreshed');
         }
 
-        function showUpgradeModal() {
-            showToast('Payment integration coming soon!');
+        async function showUpgradeModal() {
+            try {
+                const response = await apiRequest('/subscription/create-checkout-session');
+                if (response.success && response.checkout_url) {
+                    window.location.href = response.checkout_url;
+                } else {
+                    showToast('Failed to create checkout session', 'error');
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showToast(error.message || 'Failed to start checkout', 'error');
+            }
+        }
+
+        async function manageSubscription() {
+            try {
+                const response = await apiRequest('/subscription/create-portal-session');
+                if (response.success && response.portal_url) {
+                    window.location.href = response.portal_url;
+                } else {
+                    showToast('Failed to open billing portal', 'error');
+                }
+            } catch (error) {
+                console.error('Portal error:', error);
+                showToast(error.message || 'Failed to open billing portal', 'error');
+            }
         }
 
         function showToast(message, type = 'success') {

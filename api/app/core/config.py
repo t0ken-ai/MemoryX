@@ -71,6 +71,11 @@ class Settings(BaseSettings):
     firebase_storage_bucket: Optional[str] = None
     firebase_messaging_sender_id: Optional[str] = None
     firebase_app_id: Optional[str] = None
+    
+    stripe_secret_key: Optional[str] = None
+    stripe_webhook_secret: Optional[str] = None
+    stripe_pro_price_id: Optional[str] = None
+    frontend_url: str = "http://localhost:3000"
 
 
 @lru_cache()

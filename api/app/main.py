@@ -23,6 +23,7 @@ from app.routers.otp import router as otp_router
 from app.routers.firebase_auth import router as firebase_router
 from app.routers.agent_autoregister import router as agent_router
 from app.routers.agent_claim import router as claim_router
+from app.routers.subscription import router as subscription_router
 from app.core.celery_config import celery_app
 
 # 配置日志
@@ -77,6 +78,7 @@ app.include_router(otp_router, prefix="/api")
 app.include_router(firebase_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 app.include_router(claim_router, prefix="/api")
+app.include_router(subscription_router, prefix="/api")
 
 # Mount static files (optional - only if directories exist)
 import pathlib

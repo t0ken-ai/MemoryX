@@ -71,6 +71,11 @@ class User(Base):
     subscription_start = Column(DateTime, nullable=True)
     subscription_end = Column(DateTime, nullable=True)
     
+    stripe_customer_id = Column(String(255), nullable=True, index=True)
+    stripe_subscription_id = Column(String(255), nullable=True)
+    subscription_status = Column(String(50), nullable=True)
+    subscription_current_period_end = Column(Integer, nullable=True)
+    
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     quota = relationship("UserQuota", back_populates="user", uselist=False, cascade="all, delete-orphan")
