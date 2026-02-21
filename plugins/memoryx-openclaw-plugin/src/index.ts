@@ -641,7 +641,7 @@ class MemoryXPlugin {
         }
     }
     
-    public async store(content: string, category: string = "other"): Promise<{ success: boolean; task_id?: string; duplicate?: boolean; existing?: string }> {
+    public async store(content: string): Promise<{ success: boolean; task_id?: string; duplicate?: boolean; existing?: string }> {
         this.init();
         
         if (!this.config.apiKey) {
@@ -659,7 +659,7 @@ class MemoryXPlugin {
                 body: JSON.stringify({
                     content,
                     project_id: this.config.projectId,
-                    metadata: { category, source: "function_call" }
+                    metadata: { source: "function_call" }
                 })
             });
             
@@ -736,7 +736,7 @@ let plugin: MemoryXPlugin;
 export default {
     id: "memoryx-openclaw-plugin",
     name: "MemoryX Realtime Plugin",
-    version: "1.1.17",
+    version: "1.1.18",
     description: "Real-time memory capture and recall for OpenClaw",
     
     register(api: any, pluginConfig?: PluginConfig): void {
@@ -886,24 +886,19 @@ export default {
             {
                 name: "memoryx_store",
                 label: "MemoryX Store",
-                description: "Save important information to long-term memory. Use when user explicitly asks to remember something, or when you identify important user preferences, facts, or decisions that should be persisted.",
+                description: "Save important information to long-term memory. Use when user explicitly asks to remember something, or when you identify important user preferences, facts, or decisions that should be persisted. The server will automatically categorize the memory.",
                 parameters: {
                     type: "object",
                     properties: {
                         content: {
                             type: "string",
                             description: "The information to remember. Should be a clear, concise statement. Examples: 'User prefers dark mode in all applications', 'User birthday is January 15th', 'User works as a software engineer at Acme Corp'"
-                        },
-                        category: {
-                            type: "string",
-                            enum: ["preference", "fact", "plan", "experience", "opinion", "other"],
-                            description: "Category of the memory: preference (user likes/dislikes), fact (objective info), plan (future goals), experience (past events), opinion (user's views), other"
                         }
                     },
                     required: ["content"]
                 },
                 async execute(_toolCallId: string, params: any) {
-                    const { content, category = "other" } = params;
+                    const { content } = params;
                     
                     if (!plugin) {
                         return {
@@ -920,7 +915,7 @@ export default {
                     }
                     
                     try {
-                        const result = await plugin.store(content.trim(), category);
+                        const result = await plugin.store(content.trim());
                         
                         if (result.success) {
                             return {
