@@ -25,31 +25,20 @@ Base = declarative_base()
 class SubscriptionTier(str, Enum):
     FREE = "free"
     PRO = "pro"
-    ENTERPRISE = "enterprise"
 
 
 QUOTA_LIMITS = {
     SubscriptionTier.FREE: {
-        "cloud_search_per_month": 50,
-        "memories_per_month": 100,
-        "batch_upload_per_day": 50,
+        "cloud_search_per_day": 100,
     },
     SubscriptionTier.PRO: {
-        "cloud_search_per_month": -1,
-        "memories_per_month": -1,
-        "batch_upload_per_day": -1,
-    },
-    SubscriptionTier.ENTERPRISE: {
-        "cloud_search_per_month": -1,
-        "memories_per_month": -1,
-        "batch_upload_per_day": -1,
+        "cloud_search_per_day": -1,
     },
 }
 
 PRICING = {
     SubscriptionTier.FREE: 0,
     SubscriptionTier.PRO: 9.9,
-    SubscriptionTier.ENTERPRISE: 99.0,
 }
 
 
@@ -213,10 +202,6 @@ class UserQuota(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     
     cloud_search_used = Column(Integer, default=0)
-    memories_created = Column(Integer, default=0)
-    batch_uploads_today = Column(Integer, default=0)
-    
-    period_start = Column(DateTime, default=datetime.utcnow)
     last_reset_date = Column(DateTime, default=datetime.utcnow)
     
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -224,58 +209,25 @@ class UserQuota(Base):
     
     user = relationship("User", back_populates="quota")
     
-    def check_and_reset_monthly(self) -> bool:
-        now = datetime.utcnow()
-        if self.period_start.month != now.month or self.period_start.year != now.year:
-            self.cloud_search_used = 0
-            self.memories_created = 0
-            self.period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            return True
-        return False
-    
     def check_and_reset_daily(self) -> bool:
         now = datetime.utcnow()
         if self.last_reset_date.date() < now.date():
-            self.batch_uploads_today = 0
+            self.cloud_search_used = 0
             self.last_reset_date = now
             return True
         return False
     
     def can_cloud_search(self, tier: SubscriptionTier) -> tuple:
-        self.check_and_reset_monthly()
-        limit = QUOTA_LIMITS[tier]["cloud_search_per_month"]
+        self.check_and_reset_daily()
+        limit = QUOTA_LIMITS[tier]["cloud_search_per_day"]
         if limit == -1:
             return True, -1
         remaining = max(0, limit - self.cloud_search_used)
         return self.cloud_search_used < limit, remaining
     
-    def can_create_memory(self, tier: SubscriptionTier) -> tuple:
-        self.check_and_reset_monthly()
-        limit = QUOTA_LIMITS[tier]["memories_per_month"]
-        if limit == -1:
-            return True, -1
-        remaining = max(0, limit - self.memories_created)
-        return self.memories_created < limit, remaining
-    
-    def can_batch_upload(self, tier: SubscriptionTier) -> tuple:
-        self.check_and_reset_daily()
-        limit = QUOTA_LIMITS[tier]["batch_upload_per_day"]
-        if limit == -1:
-            return True, -1
-        remaining = max(0, limit - self.batch_uploads_today)
-        return self.batch_uploads_today < limit, remaining
-    
     def increment_cloud_search(self):
-        self.check_and_reset_monthly()
-        self.cloud_search_used += 1
-    
-    def increment_memories_created(self, count: int = 1):
-        self.check_and_reset_monthly()
-        self.memories_created += count
-    
-    def increment_batch_uploads(self, count: int = 1):
         self.check_and_reset_daily()
-        self.batch_uploads_today += count
+        self.cloud_search_used += 1
 
 
 def get_or_create_quota(db, user_id: int) -> UserQuota:

@@ -243,6 +243,29 @@
                 </div>
 
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="font-semibold text-white">Subscription & Usage</h2>
+                        <span id="subscriptionTier" class="px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium">FREE</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <p class="text-sm text-slate-500 mb-2">Cloud Search (Today)</p>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 bg-slate-800 rounded-full h-2">
+                                    <div id="searchUsageBar" class="bg-indigo-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                                <span id="searchUsageText" class="text-sm text-slate-400">0 / 100</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end">
+                            <button id="upgradeBtn" onclick="showUpgradeModal()" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg text-sm font-medium transition-all">
+                                Upgrade to Pro - $9.9/mo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
                     <h2 class="font-semibold text-white mb-4">Quick Actions</h2>
                     <div class="flex flex-wrap gap-4">
                         <button onclick="claimAgent()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
@@ -727,6 +750,32 @@
                 document.getElementById('factCount').textContent = stats.data?.facts_count || 0;
                 document.getElementById('agentCount').textContent = stats.data?.agents_count || 0;
                 
+                const tier = stats.data?.subscription?.tier || 'free';
+                const tierEl = document.getElementById('subscriptionTier');
+                const upgradeBtn = document.getElementById('upgradeBtn');
+                
+                if (tier === 'pro') {
+                    tierEl.textContent = 'PRO';
+                    tierEl.className = 'px-3 py-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-xs font-medium';
+                    upgradeBtn.style.display = 'none';
+                } else {
+                    tierEl.textContent = 'FREE';
+                    tierEl.className = 'px-3 py-1 bg-slate-700 text-slate-300 rounded-full text-xs font-medium';
+                    upgradeBtn.style.display = 'block';
+                }
+                
+                const quota = stats.data?.quota?.cloud_search;
+                if (quota) {
+                    const used = quota.used || 0;
+                    const limit = quota.limit === -1 ? '∞' : quota.limit;
+                    const percent = quota.limit === -1 ? 0 : Math.min(100, (used / quota.limit) * 100);
+                    
+                    document.getElementById('searchUsageBar').style.width = percent + '%';
+                    document.getElementById('searchUsageText').textContent = quota.limit === -1 
+                        ? `${used} (Unlimited)` 
+                        : `${used} / ${limit}`;
+                }
+                
                 renderRecentActivity(logs.data || []);
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
@@ -1094,6 +1143,10 @@
         function refreshData() {
             loadDashboardData();
             showToast('Data refreshed');
+        }
+
+        function showUpgradeModal() {
+            showToast('Payment integration coming soon!');
         }
 
         function showToast(message, type = 'success') {

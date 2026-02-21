@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timedelta
 
-from app.core.database import get_db, User, APIKey, Project, Memory, Fact, MemoryJudgment, UserQuota
+from app.core.database import get_db, User, APIKey, Project, Memory, Fact, MemoryJudgment, UserQuota, get_or_create_quota, SubscriptionTier, QUOTA_LIMITS, PRICING
 from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -34,13 +34,30 @@ async def get_admin_stats(
     
     facts_count = db.query(Fact).filter(Fact.user_id == user_id).count()
     
+    quota = get_or_create_quota(db, user_id)
+    tier = current_user.subscription_tier
+    limits = QUOTA_LIMITS[tier]
+    
+    can_search, search_remaining = quota.can_cloud_search(tier)
+    
     return {
         "success": True,
         "data": {
             "agents_count": agents_count,
             "projects_count": projects_count,
             "facts_count": facts_count,
-            "account_created": current_user.created_at.isoformat() if current_user.created_at else None
+            "account_created": current_user.created_at.isoformat() if current_user.created_at else None,
+            "subscription": {
+                "tier": tier.value,
+                "price": PRICING[tier]
+            },
+            "quota": {
+                "cloud_search": {
+                    "used": quota.cloud_search_used,
+                    "limit": limits["cloud_search_per_day"],
+                    "remaining": search_remaining
+                }
+            }
         }
     }
 

@@ -13,8 +13,16 @@ from celery import shared_task
 
 from app.core.celery_config import celery_app
 from app.services.memory_core.graph_memory_service import graph_memory_service
+from app.core.database import SubscriptionTier
 
 logger = logging.getLogger(__name__)
+
+
+def get_queue_for_tier(tier: SubscriptionTier) -> str:
+    """根据用户订阅层级返回队列名称"""
+    if tier == SubscriptionTier.PRO:
+        return "memory_pro"
+    return "memory_free"
 
 
 def run_async(coro):

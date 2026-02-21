@@ -12,7 +12,7 @@ from app.core.database import (
     get_or_create_quota, SubscriptionTier, QUOTA_LIMITS
 )
 from app.services.memory_core.graph_memory_service import graph_memory_service
-from app.services.memory_queue import add_memory_task
+from app.services.memory_queue import add_memory_task, get_queue_for_tier
 from app.core.celery_config import celery_app
 from app.core.config import get_settings
 
@@ -130,6 +130,14 @@ def process_conversation_task(conversation_data: dict, api_key_id: int = None):
         user_id = conversation_data["user_id"]
         messages = conversation_data["messages"]
         
+        from app.core.database import SessionLocal, User
+        db = SessionLocal()
+        try:
+            user = db.query(User).filter(User.id == int(user_id)).first()
+            tier = user.subscription_tier if user else SubscriptionTier.FREE
+        finally:
+            db.close()
+        
         import asyncio
         import json
         messages_json = json.dumps(messages, ensure_ascii=False, indent=2)
@@ -138,20 +146,19 @@ def process_conversation_task(conversation_data: dict, api_key_id: int = None):
         if filter_result.has_sensitive:
             logger.info(f"LLM filtered {filter_result.sensitive_count} sensitive items for user {user_id}")
         
-        task = add_memory_task.delay(
-            user_id=user_id,
-            content=filter_result.filtered_content,
-            metadata={
+        queue = get_queue_for_tier(tier)
+        task = add_memory_task.apply_async(
+            args=[user_id, filter_result.filtered_content, {
                 "conversation_id": conversation_data.get("conversation_id"),
                 "message_count": len(messages),
                 "has_sensitive": filter_result.has_sensitive,
                 "source": "conversation_flush",
                 "project_id": conversation_data.get("project_id", "default")
-            },
-            api_key_id=api_key_id
+            }, False, api_key_id],
+            queue=queue
         )
         
-        logger.info(f"Queued memory task for user {user_id}: {task.id}")
+        logger.info(f"Queued memory task for user {user_id}: {task.id} in queue {queue}")
         return {"task_id": task.id, "status": "queued"}
         
     except Exception as e:
@@ -203,13 +210,6 @@ async def flush_conversation(
     if not request.messages or len(request.messages) == 0:
         raise HTTPException(status_code=400, detail="messages field is required")
     
-    can_create, remaining = quota.can_create_memory(tier)
-    if not can_create:
-        raise HTTPException(
-            status_code=402,
-            detail=f"Monthly memory limit reached. Please upgrade to Pro."
-        )
-    
     conversation_data = {
         "user_id": str(user_id),
         "conversation_id": request.conversation_id,
@@ -219,7 +219,6 @@ async def flush_conversation(
     
     background_tasks.add_task(process_conversation_task, conversation_data, api_key_id)
     
-    quota.increment_memories_created()
     db.commit()
     
     return {
@@ -228,8 +227,7 @@ async def flush_conversation(
         "message_count": len(request.messages),
         "extracted_count": 1,
         "server_model_version": 1,
-        "sync_required": False,
-        "remaining_quota": remaining - 1
+        "sync_required": False
     }
 
 
@@ -249,33 +247,23 @@ async def realtime_message(
     if not message.content or len(message.content) < 2:
         return {"status": "skipped", "reason": "content_too_short"}
     
-    can_create, remaining = quota.can_create_memory(tier)
-    if not can_create:
-        raise HTTPException(
-            status_code=402,
-            detail="Monthly memory limit reached."
-        )
-    
     filter_result = await filter_sensitive_with_llm(message.content)
     
-    task = add_memory_task.delay(
-        user_id=str(user_id),
-        content=filter_result.filtered_content,
-        metadata={
+    queue = get_queue_for_tier(tier)
+    task = add_memory_task.apply_async(
+        args=[str(user_id), filter_result.filtered_content, {
             "role": message.role,
             "tokens": message.tokens,
             "source": "realtime",
             "has_sensitive": filter_result.has_sensitive
-        },
-        api_key_id=api_key_id
+        }, False, api_key_id],
+        queue=queue
     )
     
-    quota.increment_memories_created()
     db.commit()
     
     return {
         "status": "queued",
         "task_id": task.id,
-        "has_sensitive": filter_result.has_sensitive,
-        "remaining_quota": remaining - 1
+        "has_sensitive": filter_result.has_sensitive
     }

@@ -13,7 +13,8 @@ from app.core.database import (
 from app.services.memory_core.graph_memory_service import graph_memory_service
 from app.services.memory_queue import (
     add_memory_task,
-    batch_add_memory_task
+    batch_add_memory_task,
+    get_queue_for_tier
 )
 
 logger = logging.getLogger(__name__)
@@ -102,32 +103,22 @@ async def create_memory(
     """
     user_id, tier, quota, api_key_id = user_data
     
-    can_create, remaining = quota.can_create_memory(tier)
-    if not can_create:
-        raise HTTPException(
-            status_code=402,
-            detail=f"Monthly memory limit reached ({QUOTA_LIMITS[tier]['memories_per_month']}). Please upgrade to Pro for unlimited memories."
-        )
-    
     metadata = memory.metadata or {}
     metadata["project_id"] = memory.project_id
     
-    task = add_memory_task.delay(
-        user_id=str(user_id),
-        content=memory.content,
-        metadata=metadata,
-        api_key_id=api_key_id
+    queue = get_queue_for_tier(tier)
+    task = add_memory_task.apply_async(
+        args=[str(user_id), memory.content, metadata, False, api_key_id],
+        queue=queue
     )
     
-    quota.increment_memories_created()
     db.commit()
     
     return {
         "success": True,
         "message": "Memory task queued for processing",
         "task_id": task.id,
-        "status": "pending",
-        "remaining_quota": remaining - 1
+        "status": "pending"
     }
 
 
@@ -151,38 +142,18 @@ async def batch_create_memories(
     if len(batch.memories) > 200:
         raise HTTPException(status_code=400, detail="Maximum 200 memories per batch")
     
-    can_batch, remaining = quota.can_batch_upload(tier)
-    if not can_batch:
-        raise HTTPException(
-            status_code=402,
-            detail=f"Daily batch upload limit reached ({QUOTA_LIMITS[tier]['batch_upload_per_day']}). Please upgrade to Pro."
-        )
-    
-    can_create, mem_remaining = quota.can_create_memory(tier)
-    if not can_create and tier == SubscriptionTier.FREE:
-        allowed = min(len(batch.memories), mem_remaining)
-        if allowed == 0:
-            raise HTTPException(
-                status_code=402,
-                detail=f"Monthly memory limit reached. Please upgrade to Pro."
-            )
-        batch.memories = batch.memories[:allowed]
-    
     contents = [item.content for item in batch.memories]
     metadatas = [item.metadata or {} for item in batch.memories]
     
     for i, m in enumerate(metadatas):
         m["project_id"] = batch.project_id
     
-    task = batch_add_memory_task.delay(
-        user_id=str(user_id),
-        contents=contents,
-        metadatas=metadatas,
-        api_key_id=api_key_id
+    queue = get_queue_for_tier(tier)
+    task = batch_add_memory_task.apply_async(
+        args=[str(user_id), contents, metadatas, api_key_id],
+        queue=queue
     )
     
-    quota.increment_memories_created(len(batch.memories))
-    quota.increment_batch_uploads()
     db.commit()
     
     return {
@@ -190,8 +161,7 @@ async def batch_create_memories(
         "message": f"Batch of {len(batch.memories)} memories queued for processing",
         "task_id": task.id,
         "status": "pending",
-        "queued_count": len(batch.memories),
-        "remaining_quota": remaining - len(batch.memories)
+        "queued_count": len(batch.memories)
     }
 
 
@@ -393,8 +363,6 @@ async def get_quota_info(
     limits = QUOTA_LIMITS[tier]
     
     _, search_remaining = quota.can_cloud_search(tier)
-    _, mem_remaining = quota.can_create_memory(tier)
-    _, batch_remaining = quota.can_batch_upload(tier)
     
     return {
         "success": True,
@@ -403,18 +371,8 @@ async def get_quota_info(
             "price": PRICING[tier],
             "cloud_search": {
                 "used": quota.cloud_search_used,
-                "limit": limits["cloud_search_per_month"],
+                "limit": limits["cloud_search_per_day"],
                 "remaining": search_remaining
-            },
-            "memories": {
-                "used": quota.memories_created,
-                "limit": limits["memories_per_month"],
-                "remaining": mem_remaining
-            },
-            "batch_upload": {
-                "used": quota.batch_uploads_today,
-                "limit": limits["batch_upload_per_day"],
-                "remaining": batch_remaining
             }
         }
     }
