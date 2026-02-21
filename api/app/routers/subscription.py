@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, Header, Body
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -34,9 +34,9 @@ class SubscriptionStatus(BaseModel):
 
 @router.post("/create-checkout-session")
 async def create_checkout_session(
-    request: CreateCheckoutSessionRequest,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    request: Optional[CreateCheckoutSessionRequest] = Body(default=None)
 ):
     if not settings.stripe_secret_key or not settings.stripe_pro_price_id:
         raise HTTPException(status_code=500, detail="Stripe not configured")
@@ -44,8 +44,8 @@ async def create_checkout_session(
     if current_user.subscription_tier == SubscriptionTier.PRO:
         raise HTTPException(status_code=400, detail="Already a PRO subscriber")
     
-    success_url = request.success_url or f"{settings.frontend_url}/?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = request.cancel_url or f"{settings.frontend_url}/"
+    success_url = (request.success_url if request else None) or f"{settings.frontend_url}/?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = (request.cancel_url if request else None) or f"{settings.frontend_url}/"
     
     try:
         customer = None

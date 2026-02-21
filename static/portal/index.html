@@ -1151,7 +1151,7 @@
 
         async function showUpgradeModal() {
             try {
-                const response = await apiRequest('/subscription/create-checkout-session');
+                const response = await apiRequest('/subscription/create-checkout-session', { method: 'POST' });
                 if (response.success && response.checkout_url) {
                     window.location.href = response.checkout_url;
                 } else {
@@ -1165,7 +1165,7 @@
 
         async function manageSubscription() {
             try {
-                const response = await apiRequest('/subscription/create-portal-session');
+                const response = await apiRequest('/subscription/create-portal-session', { method: 'POST' });
                 if (response.success && response.portal_url) {
                     window.location.href = response.portal_url;
                 } else {
