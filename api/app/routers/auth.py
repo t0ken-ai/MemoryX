@@ -20,6 +20,8 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
+    display_name: str = None
+    photo_url: str = None
     
     class Config:
         from_attributes = True

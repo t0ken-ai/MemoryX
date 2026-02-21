@@ -3,7 +3,7 @@
  * 处理所有与后端的 API 通信
  */
 
-const API_BASE_URL = 'http://192.168.31.65:8080/api';
+const API_BASE_URL = '/api';
 
 // 存储 token
 const TokenStore = {

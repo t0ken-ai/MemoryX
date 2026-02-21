@@ -406,7 +406,7 @@ class MemoryXPlugin {
                 body: JSON.stringify({
                     machine_fingerprint: fingerprint,
                     agent_type: "openclaw",
-                    agent_name: "openclaw-agent",
+                    agent_name: os.hostname(),
                     platform: os.platform(),
                     platform_version: os.release()
                 })

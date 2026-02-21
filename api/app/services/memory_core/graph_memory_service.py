@@ -709,7 +709,7 @@ class GraphMemoryService:
         finally:
             db.close()
     
-    async def update_memory_with_judgment(self, user_id: str, new_facts: List[str], existing_memories: List[Dict], input_content: str = "") -> Dict[str, Any]:
+    async def update_memory_with_judgment(self, user_id: str, new_facts: List[str], existing_memories: List[Dict], input_content: str = "", api_key_id: int = None) -> Dict[str, Any]:
         import uuid
         import time
         
@@ -789,6 +789,7 @@ class GraphMemoryService:
             judgment_record = MemoryJudgment(
                 trace_id=trace_id,
                 user_id=int(user_id) if user_id.isdigit() else 1,
+                api_key_id=api_key_id,
                 operation_type="MEMORY_UPDATE",
                 input_content=input_content,
                 extracted_facts=new_facts,
@@ -1183,7 +1184,7 @@ class GraphMemoryService:
             }
         }
     
-    async def add_memory(self, user_id: str, content: str, metadata: Dict = None, skip_judge: bool = False) -> Dict[str, Any]:
+    async def add_memory(self, user_id: str, content: str, metadata: Dict = None, skip_judge: bool = False, api_key_id: int = None) -> Dict[str, Any]:
         import uuid
         import time
         start_time = time.time()
@@ -1297,7 +1298,7 @@ class GraphMemoryService:
         existing_memories = await self.search_related_memories(user_id, fact_contents, limit=5, score_threshold=0.7)
         logger.info(f"[ADD_MEMORY] Related memories found | count={len(existing_memories)}")
         
-        judgment = await self.update_memory_with_judgment(user_id, fact_contents, existing_memories, content)
+        judgment = await self.update_memory_with_judgment(user_id, fact_contents, existing_memories, content, api_key_id)
         
         memory_operations = judgment.get("memory", [])
         trace_id = judgment.get("trace_id", "")

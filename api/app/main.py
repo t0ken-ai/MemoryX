@@ -17,7 +17,7 @@ import logging
 from app.core.config import get_settings
 from app.core.database import engine, Base, get_db
 from app.core.database import APIKey
-from app.routers import auth, api_keys, memories, projects, stats
+from app.routers import auth, api_keys, memories, projects, stats, admin
 from app.routers import conversations
 from app.routers.otp import router as otp_router
 from app.routers.firebase_auth import router as firebase_router
@@ -72,17 +72,22 @@ app.include_router(memories.router, prefix="/api")
 app.include_router(conversations.router, prefix="/api")
 app.include_router(projects.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
 app.include_router(otp_router, prefix="/api")
 app.include_router(firebase_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 app.include_router(claim_router, prefix="/api")
 
 # Mount static files (optional - only if directories exist)
+import pathlib
+_base_dir = pathlib.Path(__file__).parent.parent.parent / "static"
+_static_base = str(_base_dir) if _base_dir.exists() else "/app/static"
+
 static_dirs = {
-    "/portal": "/app/static/portal",
-    "/docs": "/app/static",
-    "/admin": "/app/static/admin",
-    "/doc": "/app/static/doc",
+    "/portal": f"{_static_base}/portal",
+    "/docs": _static_base,
+    "/admin": f"{_static_base}/admin",
+    "/doc": f"{_static_base}/doc",
 }
 
 for route, directory in static_dirs.items():
@@ -92,7 +97,7 @@ for route, directory in static_dirs.items():
 # Static pages
 @app.get("/", response_class=HTMLResponse)
 async def landing_page():
-    landing_html_path = "/app/static/index.html"
+    landing_html_path = f"{_static_base}/index.html"
     if os.path.exists(landing_html_path):
         with open(landing_html_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -100,7 +105,7 @@ async def landing_page():
 
 @app.get("/privacy.html", response_class=HTMLResponse)
 async def privacy_page():
-    privacy_html_path = "/app/static/privacy.html"
+    privacy_html_path = f"{_static_base}/privacy.html"
     if os.path.exists(privacy_html_path):
         with open(privacy_html_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -108,7 +113,7 @@ async def privacy_page():
 
 @app.get("/terms.html", response_class=HTMLResponse)
 async def terms_page():
-    terms_html_path = "/app/static/terms.html"
+    terms_html_path = f"{_static_base}/terms.html"
     if os.path.exists(terms_html_path):
         with open(terms_html_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -116,7 +121,7 @@ async def terms_page():
 
 @app.get("/agent-register", response_class=HTMLResponse)
 async def agent_register_guide():
-    guide_html_path = "/app/static/agent-register-guide.html"
+    guide_html_path = f"{_static_base}/agent-register-guide.html"
     if os.path.exists(guide_html_path):
         with open(guide_html_path, "r", encoding="utf-8") as f:
             return f.read()
@@ -124,7 +129,7 @@ async def agent_register_guide():
 
 @app.get("/admin/my-machines", response_class=HTMLResponse)
 async def my_machines_page():
-    machines_html_path = "/app/static/my-machines.html"
+    machines_html_path = f"{_static_base}/my-machines.html"
     if os.path.exists(machines_html_path):
         with open(machines_html_path, "r", encoding="utf-8") as f:
             return f.read()

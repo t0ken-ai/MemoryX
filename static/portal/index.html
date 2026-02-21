@@ -159,14 +159,19 @@
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                     Dashboard
                 </a>
-                <a href="#" onclick="showSection('memories')" class="nav-link flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" data-section="memories">
-                    <i data-lucide="brain" class="w-4 h-4"></i>
-                    Memories
-                    <span id="memoryCount" class="ml-auto text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full">0</span>
+                <a href="#" onclick="showSection('activity')" class="nav-link flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" data-section="activity">
+                    <i data-lucide="activity" class="w-4 h-4"></i>
+                    Activity
                 </a>
-                <a href="#" onclick="showSection('apikeys')" class="nav-link flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" data-section="apikeys">
-                    <i data-lucide="key" class="w-4 h-4"></i>
-                    API Keys
+                <a href="#" onclick="showSection('agents')" class="nav-link flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" data-section="agents">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                    Agents
+                    <span id="agentCount" class="ml-auto text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">0</span>
+                </a>
+                <a href="#" onclick="showSection('facts')" class="nav-link flex items-center gap-3 px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors" data-section="facts">
+                    <i data-lucide="brain" class="w-4 h-4"></i>
+                    Facts
+                    <span id="factCount" class="ml-auto text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full">0</span>
                 </a>
                 
                 <p class="px-3 text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 mt-6">Account</p>
@@ -178,10 +183,10 @@
             
             <div class="p-4 border-t border-slate-800">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium" id="userAvatar">A</div>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium overflow-hidden" id="userAvatar">A</div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate" id="userEmail">-</p>
-                        <p class="text-xs text-slate-500">Free Plan</p>
+                        <p class="text-sm font-medium text-white truncate" id="userDisplayName">-</p>
+                        <p class="text-xs text-slate-500 truncate" id="userEmail">-</p>
                     </div>
                 </div>
             </div>
@@ -212,18 +217,18 @@
                                 <i data-lucide="brain" class="w-5 h-5 text-indigo-400"></i>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="statMemories">0</p>
-                        <p class="text-sm text-slate-500">Total Memories</p>
+                        <p class="text-2xl font-bold text-white" id="statFacts">0</p>
+                        <p class="text-sm text-slate-500">Total Facts</p>
                     </div>
 
                     <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                                <i data-lucide="key" class="w-5 h-5 text-green-400"></i>
+                                <i data-lucide="bot" class="w-5 h-5 text-green-400"></i>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="statApiKeys">0</p>
-                        <p class="text-sm text-slate-500">API Keys</p>
+                        <p class="text-2xl font-bold text-white" id="statAgents">0</p>
+                        <p class="text-sm text-slate-500">Agents</p>
                     </div>
 
                     <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
@@ -232,7 +237,7 @@
                                 <i data-lucide="folder" class="w-5 h-5 text-blue-400"></i>
                             </div>
                         </div>
-                        <p class="text-2xl font-bold text-white" id="statProjects">1</p>
+                        <p class="text-2xl font-bold text-white" id="statProjects">0</p>
                         <p class="text-sm text-slate-500">Projects</p>
                     </div>
                 </div>
@@ -240,91 +245,124 @@
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6 mb-8">
                     <h2 class="font-semibold text-white mb-4">Quick Actions</h2>
                     <div class="flex flex-wrap gap-4">
-                        <button onclick="showCreateMemoryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                        <button onclick="claimAgent()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                             <i data-lucide="plus" class="w-4 h-4"></i>
-                            New Memory
+                            Claim Agent
                         </button>
-                        <button onclick="showSection('apikeys')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                            <i data-lucide="key" class="w-4 h-4"></i>
-                            Create API Key
+                        <button onclick="window.open('/agent-register-guide.html', '_blank')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>
+                            Register New Agent
                         </button>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl">
                     <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-                        <h2 class="font-semibold text-white">Recent Memories</h2>
-                        <a href="#" onclick="showSection('memories')" class="text-sm text-indigo-400 hover:text-indigo-300">View all</a>
+                        <h2 class="font-semibold text-white">Recent Activity</h2>
                     </div>
-                    <div id="recentMemoriesList" class="divide-y divide-slate-800">
+                    <div id="recentActivityList" class="divide-y divide-slate-800">
                         <div class="p-6 text-center text-slate-500">Loading...</div>
                     </div>
                 </div>
             </div>
 
-            <div id="memoriesSection" class="hidden p-8 section-content">
+            <div id="agentsSection" class="hidden p-8 section-content">
                 <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-4 flex-1">
-                        <div class="relative flex-1 max-w-md">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
-                            <input type="text" id="memorySearch" placeholder="Search memories..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-indigo-500">
-                        </div>
-                        <button onclick="searchMemories()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium">Search</button>
+                    <h2 class="text-xl font-semibold text-white">Agents</h2>
+                    <div class="flex gap-3">
+                        <button onclick="claimAgent()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>Claim Agent
+                        </button>
+                        <button onclick="window.open('/agent-register-guide.html', '_blank')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="book-open" class="w-4 h-4"></i>Register New
+                        </button>
                     </div>
-                    <button onclick="showCreateMemoryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i>New Memory
-                    </button>
                 </div>
 
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl">
-                    <div id="memoriesList" class="divide-y divide-slate-800">
-                        <div class="p-6 text-center text-slate-500">Loading memories...</div>
+                    <div id="agentsList" class="divide-y divide-slate-800">
+                        <div class="p-6 text-center text-slate-500">Loading agents...</div>
                     </div>
                 </div>
             </div>
 
-            <div id="apikeysSection" class="hidden p-8 section-content">
+            <div id="factsSection" class="hidden p-8 section-content">
                 <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-white">API Keys</h2>
-                    <button onclick="createApiKey()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium flex items-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i>Create Key
-                    </button>
+                    <h2 class="text-xl font-semibold text-white">Facts</h2>
+                    <div class="flex items-center gap-3">
+                        <select id="factsDaysFilter" onchange="onFactsDaysFilterChange()" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="">All Time</option>
+                            <option value="1">Last 1 Day</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="14">Last 14 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                        <div id="factsCustomDateRange" class="hidden flex items-center gap-2">
+                            <input type="date" id="factsStartDate" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <span class="text-slate-500">to</span>
+                            <input type="date" id="factsEndDate" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <button onclick="loadFactsData()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm">Apply</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl">
-                    <div id="apiKeysList" class="divide-y divide-slate-800">
-                        <div class="p-6 text-center text-slate-500">Loading API keys...</div>
+                    <div id="factsList" class="divide-y divide-slate-800">
+                        <div class="p-6 text-center text-slate-500">Loading facts...</div>
+                    </div>
+                </div>
+                
+                <div id="factsPagination" class="flex items-center justify-between mt-4 px-4">
+                    <p class="text-sm text-slate-500">Showing <span id="factsShowing">0</span> of <span id="factsTotal">0</span> facts</p>
+                    <div class="flex items-center gap-2">
+                        <button onclick="factsPrevPage()" id="factsPrevBtn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                        <span id="factsPageInfo" class="text-sm text-slate-500">Page 1</span>
+                        <button onclick="factsNextPage()" id="factsNextBtn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="activitySection" class="hidden p-8 section-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-white">Activity</h2>
+                    <div class="flex items-center gap-3">
+                        <select id="activityAgentFilter" onchange="loadActivityData()" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="">All Agents</option>
+                        </select>
+                        <select id="activityDaysFilter" onchange="onDaysFilterChange()" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <option value="">All Time</option>
+                            <option value="1">Last 1 Day</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="14">Last 14 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                        <div id="customDateRange" class="hidden flex items-center gap-2">
+                            <input type="date" id="activityStartDate" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <span class="text-slate-500">to</span>
+                            <input type="date" id="activityEndDate" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <button onclick="loadActivityData()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm">Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl">
+                    <div id="activityFullList" class="divide-y divide-slate-800">
+                        <div class="p-6 text-center text-slate-500">Loading activity...</div>
+                    </div>
+                </div>
+                
+                <div id="activityPagination" class="flex items-center justify-between mt-4 px-4">
+                    <p class="text-sm text-slate-500">Showing <span id="activityShowing">0</span> of <span id="activityTotal">0</span> activities</p>
+                    <div class="flex items-center gap-2">
+                        <button onclick="activityPrevPage()" id="activityPrevBtn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                        <span id="activityPageInfo" class="text-sm text-slate-500">Page 1</span>
+                        <button onclick="activityNextPage()" id="activityNextBtn" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
                     </div>
                 </div>
             </div>
         </main>
-    </div>
-
-    <!-- Create Memory Modal -->
-    <div id="createMemoryModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 w-full max-w-lg">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-white">Create Memory</h3>
-                <button onclick="hideCreateMemoryModal()" class="text-slate-400 hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <form id="createMemoryForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Content</label>
-                    <textarea id="memoryContent" required rows="4" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500" placeholder="Enter memory content..."></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-2">Project ID (optional)</label>
-                    <input type="text" id="memoryProject" class="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500" placeholder="default">
-                </div>
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="hideCreateMemoryModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">Cancel</button>
-                    <button type="submit" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors">Create</button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- Toast -->
@@ -364,6 +402,18 @@
 
         // Check if user is already logged in
         onAuthStateChanged(auth, async (user) => {
+            // TEST MODE: Skip auth if ?test=1 in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('test') === '1') {
+                console.log('Test mode enabled');
+                document.getElementById('authModal').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                authToken = localStorage.getItem('memoryx_test_key') || '';
+                loadDashboardData();
+                lucide.createIcons();
+                return;
+            }
+            
             if (user) {
                 // User is signed in, get ID token and login to our backend
                 const idToken = await user.getIdToken();
@@ -433,6 +483,11 @@
                     const data = await response.json();
                     localStorage.setItem('memoryx_token', data.access_token);
                     localStorage.setItem('memoryx_email', email);
+                    // Store user info from backend response
+                    if (data.user) {
+                        localStorage.setItem('memoryx_display_name', data.user.display_name || '');
+                        localStorage.setItem('memoryx_photo_url', data.user.photo_url || '');
+                    }
                     showMainApp();
                     loadDashboardData();
                     showToast('Welcome!');
@@ -452,6 +507,8 @@
             await signOut(auth);
             localStorage.removeItem('memoryx_token');
             localStorage.removeItem('memoryx_email');
+            localStorage.removeItem('memoryx_display_name');
+            localStorage.removeItem('memoryx_photo_url');
             localStorage.removeItem('emailForSignIn');
         };
     </script>
@@ -460,6 +517,11 @@
         const API_BASE = '/api';
         let authToken = localStorage.getItem('memoryx_token');
         let resendTimer = null;
+        
+        // TEST MODE: Auto-set token if test=1
+        if (new URLSearchParams(window.location.search).get('test') === '1') {
+            authToken = 'test_token';
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -580,8 +642,22 @@
             document.getElementById('mainApp').classList.remove('hidden');
             
             const email = localStorage.getItem('memoryx_email') || '';
+            const displayName = localStorage.getItem('memoryx_display_name') || '';
+            const photoURL = localStorage.getItem('memoryx_photo_url') || '';
+            
+            // Update display name
+            const displayText = displayName || email.split('@')[0] || 'User';
+            document.getElementById('userDisplayName').textContent = displayText;
             document.getElementById('userEmail').textContent = email;
-            document.getElementById('userAvatar').textContent = email.charAt(0).toUpperCase();
+            
+            // Update avatar - use photo if available, otherwise show first letter
+            const avatarEl = document.getElementById('userAvatar');
+            if (photoURL) {
+                avatarEl.innerHTML = `<img src="${photoURL}" class="w-8 h-8 rounded-full object-cover" alt="${displayText}" onerror="this.parentElement.innerHTML='${displayText.charAt(0).toUpperCase()}'">`;
+            } else {
+                avatarEl.textContent = displayText.charAt(0).toUpperCase();
+            }
+            
             lucide.createIcons();
         }
 
@@ -608,18 +684,26 @@
             if (section === 'memories') loadMemories();
             if (section === 'apikeys') loadApiKeys();
             if (section === 'dashboard') loadDashboardData();
+            if (section === 'agents') loadAgents();
+            if (section === 'facts') { factsPage = 0; loadFacts(); }
+            if (section === 'activity') { activityPage = 0; loadActivityAgents(); loadActivityData(); }
             
             lucide.createIcons();
         }
 
         // API Functions
         async function apiRequest(endpoint, options = {}) {
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+            
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            
             const response = await fetch(`${API_BASE}${endpoint}`, {
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
+                headers,
                 ...options
             });
             
@@ -629,141 +713,190 @@
 
         async function loadDashboardData() {
             try {
-                const [memories, apiKeys] = await Promise.all([
-                    apiRequest('/v1/memories?limit=1'),
-                    apiRequest('/keys')
+                const [stats, logs] = await Promise.all([
+                    apiRequest('/admin/stats'),
+                    apiRequest('/admin/logs?limit=8')
                 ]);
                 
-                document.getElementById('statMemories').textContent = memories.total || 0;
-                document.getElementById('statApiKeys').textContent = apiKeys.data?.length || 0;
-                document.getElementById('memoryCount').textContent = memories.total || 0;
+                document.getElementById('statFacts').textContent = stats.data?.facts_count || 0;
+                document.getElementById('statAgents').textContent = stats.data?.agents_count || 0;
+                document.getElementById('statProjects').textContent = stats.data?.projects_count || 0;
+                document.getElementById('factCount').textContent = stats.data?.facts_count || 0;
+                document.getElementById('agentCount').textContent = stats.data?.agents_count || 0;
                 
-                const recent = await apiRequest('/v1/memories?limit=5');
-                renderRecentMemories(recent.data || []);
+                renderRecentActivity(logs.data || []);
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
             }
         }
 
-        function renderRecentMemories(memories) {
-            const container = document.getElementById('recentMemoriesList');
-            if (!memories || memories.length === 0) {
-                container.innerHTML = '<div class="p-6 text-center text-slate-500">No memories yet. Create your first memory!</div>';
+        function renderRecentActivity(logs) {
+            const container = document.getElementById('recentActivityList');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="p-6 text-center text-slate-500">No recent activity</div>';
                 return;
             }
             
-            container.innerHTML = memories.map(m => `
-                <div class="px-6 py-4 flex items-center gap-4">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                        <i data-lucide="brain" class="w-4 h-4 text-indigo-400"></i>
+            container.innerHTML = logs.map(l => {
+                const opTypeBadge = {
+                    'add': '<span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">ADD</span>',
+                    'update': '<span class="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">UPDATE</span>',
+                    'delete': '<span class="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded">DELETE</span>'
+                };
+                
+                const opBadges = (l.op_types || []).map(t => opTypeBadge[t] || '').join(' ');
+                const factsText = (l.facts_content || []).slice(0, 2).join('; ');
+                
+                return `
+                <div class="px-6 py-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="activity" class="w-5 h-5 text-indigo-400"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm text-white truncate">${escapeHtml(m.content)}</p>
-                        <p class="text-xs text-slate-500">${m.cognitive_sector || 'semantic'} · ${formatDate(m.created_at)}</p>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium text-white">${escapeHtml(l.agent_name || 'Unknown')}</span>
+                            ${opBadges}
+                        </div>
+                        <p class="text-sm text-slate-400 truncate">${escapeHtml(factsText || l.input_content || '-')}</p>
+                        ${l.reasoning ? `<details class="mt-1"><summary class="text-xs text-slate-500 cursor-pointer hover:text-slate-400 truncate">Show Reasoning</summary><p class="text-xs text-slate-500 mt-1 whitespace-pre-wrap">${escapeHtml(l.reasoning)}</p></details>` : ''}
+                        <p class="text-xs text-slate-600 mt-1">${formatDate(l.created_at)}</p>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             lucide.createIcons();
+        }
+
+        function renderRecentMemories(memories) {
+            renderRecentActivity(memories);
+        }
+
+        let activityPage = 0;
+        const activityPageSize = 10;
+        
+        function onDaysFilterChange() {
+            const daysFilter = document.getElementById('activityDaysFilter').value;
+            const customRange = document.getElementById('customDateRange');
+            
+            if (daysFilter === 'custom') {
+                customRange.classList.remove('hidden');
+            } else {
+                customRange.classList.add('hidden');
+            }
+            loadActivityData();
+        }
+        
+        async function loadActivityAgents() {
+            try {
+                const data = await apiRequest('/admin/agents');
+                const select = document.getElementById('activityAgentFilter');
+                select.innerHTML = '<option value="">All Agents</option>';
+                (data.data || []).forEach(agent => {
+                    select.innerHTML += `<option value="${agent.id}">${escapeHtml(agent.name)}</option>`;
+                });
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+            }
+        }
+        
+        async function loadActivityData() {
+            const daysFilter = document.getElementById('activityDaysFilter').value;
+            const agentFilter = document.getElementById('activityAgentFilter').value;
+            
+            let url = `/admin/logs?limit=${activityPageSize}&offset=${activityPage * activityPageSize}`;
+            
+            if (agentFilter) {
+                url += `&agent_id=${agentFilter}`;
+            }
+            
+            if (daysFilter && daysFilter !== 'custom') {
+                url += `&days=${daysFilter}`;
+            } else if (daysFilter === 'custom') {
+                const startDate = document.getElementById('activityStartDate').value;
+                const endDate = document.getElementById('activityEndDate').value;
+                if (startDate) url += `&start_date=${startDate}`;
+                if (endDate) url += `&end_date=${endDate}`;
+            }
+            
+            try {
+                const data = await apiRequest(url);
+                renderActivityFullList(data.data || [], data.total || 0);
+            } catch (error) {
+                console.error('Failed to load activity:', error);
+            }
+        }
+        
+        function renderActivityFullList(logs, total) {
+            const container = document.getElementById('activityFullList');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = '<div class="p-6 text-center text-slate-500">No activity found</div>';
+                document.getElementById('activityShowing').textContent = '0';
+                document.getElementById('activityTotal').textContent = '0';
+                return;
+            }
+            
+            const start = activityPage * activityPageSize + 1;
+            const end = Math.min(start + logs.length - 1, total);
+            
+            document.getElementById('activityShowing').textContent = `${start}-${end}`;
+            document.getElementById('activityTotal').textContent = total;
+            document.getElementById('activityPageInfo').textContent = `Page ${activityPage + 1}`;
+            
+            document.getElementById('activityPrevBtn').disabled = activityPage === 0;
+            document.getElementById('activityNextBtn').disabled = end >= total;
+            
+            container.innerHTML = logs.map(l => {
+                const opTypeBadge = {
+                    'add': '<span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">ADD</span>',
+                    'update': '<span class="text-xs px-2 py-0.5 bg-yellow-500/20 text-yellow-400 rounded">UPDATE</span>',
+                    'delete': '<span class="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded">DELETE</span>'
+                };
+                
+                const opBadges = (l.op_types || []).map(t => opTypeBadge[t] || '').join(' ');
+                const factsText = (l.facts_content || []).slice(0, 3).join('; ');
+                
+                return `
+                <div class="px-6 py-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="activity" class="w-5 h-5 text-indigo-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium text-white">${escapeHtml(l.agent_name || 'Unknown')}</span>
+                            ${opBadges || '<span class="text-xs px-2 py-0.5 bg-slate-700 text-slate-400 rounded">NONE</span>'}
+                        </div>
+                        <p class="text-sm text-slate-400">${escapeHtml(factsText || l.input_content || '-')}</p>
+                        ${l.reasoning ? `<details class="mt-2"><summary class="text-xs text-slate-500 cursor-pointer hover:text-slate-400">Show Reasoning</summary><p class="text-xs text-slate-500 mt-1 whitespace-pre-wrap">${escapeHtml(l.reasoning)}</p></details>` : ''}
+                        <p class="text-xs text-slate-600 mt-1">${formatDate(l.created_at)}</p>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons();
+        }
+        
+        function activityPrevPage() {
+            if (activityPage > 0) {
+                activityPage--;
+                loadActivityData();
+            }
+        }
+        
+        function activityNextPage() {
+            activityPage++;
+            loadActivityData();
         }
 
         async function loadMemories() {
-            try {
-                const data = await apiRequest('/v1/memories?limit=50');
-                renderMemories(data.data || []);
-            } catch (error) {
-                console.error('Failed to load memories:', error);
-            }
+            await loadFacts();
         }
 
         function renderMemories(memories) {
-            const container = document.getElementById('memoriesList');
-            if (!memories || memories.length === 0) {
-                container.innerHTML = '<div class="p-6 text-center text-slate-500">No memories found</div>';
-                return;
-            }
-            
-            container.innerHTML = memories.map(m => `
-                <div class="px-6 py-4 flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                        <i data-lucide="brain" class="w-5 h-5 text-indigo-400"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm text-white">${escapeHtml(m.content)}</p>
-                        <div class="flex items-center gap-3 mt-1">
-                            <span class="text-xs px-2 py-0.5 bg-slate-800 rounded text-slate-400">${m.cognitive_sector || 'semantic'}</span>
-                            <span class="text-xs text-slate-500">${formatDate(m.created_at)}</span>
-                        </div>
-                    </div>
-                    <button onclick="deleteMemory('${m.id}')" class="text-slate-400 hover:text-red-400 transition-colors">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `).join('');
-            lucide.createIcons();
+            renderFacts(memories);
         }
-
-        async function searchMemories() {
-            const query = document.getElementById('memorySearch').value;
-            if (!query) { loadMemories(); return; }
-            
-            try {
-                const data = await apiRequest('/v1/memories/search', {
-                    method: 'POST',
-                    body: JSON.stringify({ query, limit: 20 })
-                });
-                renderMemories(data.data || []);
-            } catch (error) {
-                showToast('Search failed', 'error');
-            }
-        }
-
-        function showCreateMemoryModal() {
-            document.getElementById('createMemoryModal').classList.remove('hidden');
-        }
-
-        function hideCreateMemoryModal() {
-            document.getElementById('createMemoryModal').classList.add('hidden');
-            document.getElementById('createMemoryForm').reset();
-        }
-
-        document.getElementById('createMemoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const content = document.getElementById('memoryContent').value;
-            const projectId = document.getElementById('memoryProject').value || 'default';
-            
-            try {
-                const keys = await apiRequest('/keys');
-                if (!keys.data || keys.data.length === 0) {
-                    showToast('Please create an API key first', 'error');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE}/v1/memories`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-Key': keys.data[0].key
-                    },
-                    body: JSON.stringify({ content, project_id: projectId })
-                });
-                
-                if (response.ok) {
-                    showToast('Memory created!');
-                    hideCreateMemoryModal();
-                    loadDashboardData();
-                    if (!document.getElementById('memoriesSection').classList.contains('hidden')) loadMemories();
-                } else {
-                    throw new Error('Failed');
-                }
-            } catch (error) {
-                showToast('Failed to create memory', 'error');
-            }
-        });
 
         async function deleteMemory(id) {
             if (!confirm('Delete this memory?')) return;
             try {
-                await apiRequest(`/v1/memories/${id}`, { method: 'DELETE' });
+                await apiRequest(`/admin/memories/${id}`, { method: 'DELETE' });
                 showToast('Memory deleted');
                 loadMemories();
                 loadDashboardData();
@@ -772,19 +905,19 @@
             }
         }
 
-        async function loadApiKeys() {
+        async function loadAgents() {
             try {
-                const data = await apiRequest('/keys');
-                renderApiKeys(data.data || []);
+                const data = await apiRequest('/admin/agents');
+                renderAgents(data.data || []);
             } catch (error) {
-                console.error('Failed to load API keys:', error);
+                console.error('Failed to load agents:', error);
             }
         }
 
-        function renderApiKeys(keys) {
-            const container = document.getElementById('apiKeysList');
+        function renderAgents(keys) {
+            const container = document.getElementById('agentsList');
             if (!keys || keys.length === 0) {
-                container.innerHTML = '<div class="p-6 text-center text-slate-500">No API keys. Create one to get started.</div>';
+                container.innerHTML = '<div class="p-6 text-center text-slate-500">No agents. Create one via OpenClaw plugin or claim an existing agent.</div>';
                 return;
             }
             
@@ -792,18 +925,19 @@
                 <div class="px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                            <i data-lucide="key" class="w-5 h-5 text-green-400"></i>
+                            <i data-lucide="bot" class="w-5 h-5 text-green-400"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-white font-medium">${k.name}</p>
-                            <p class="text-xs text-slate-500 font-mono">${k.key}</p>
+                            <p class="text-sm text-white font-medium">${escapeHtml(k.name)}</p>
+                            <p class="text-xs text-slate-500 font-mono">${k.api_key ? k.api_key.substring(0, 12) + '...' + k.api_key.substring(k.api_key.length - 4) : '-'}</p>
+                            <p class="text-xs text-slate-600">Created: ${formatDate(k.created_at)}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button onclick="copyToClipboard('${k.key}')" class="text-slate-400 hover:text-white">
+                        <button onclick="copyToClipboard('${k.api_key || ''}')" class="text-slate-400 hover:text-white">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteApiKey(${k.id})" class="text-slate-400 hover:text-red-400">
+                        <button onclick="deleteAgent(${k.id})" class="text-slate-400 hover:text-red-400">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -812,30 +946,143 @@
             lucide.createIcons();
         }
 
-        async function createApiKey() {
-            const name = prompt('API key name:', 'Production');
-            if (!name) return;
+        async function claimAgent() {
+            const apiKey = prompt('Enter your API Key to claim agent:', 'omx_...');
+            if (!apiKey) return;
             
             try {
-                await apiRequest('/keys', { method: 'POST', body: JSON.stringify({ name }) });
-                showToast('API key created');
-                loadApiKeys();
+                const result = await apiRequest('/admin/agents/claim', {
+                    method: 'POST',
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                showToast(result.message || 'Agent claimed!');
+                loadAgents();
                 loadDashboardData();
             } catch (error) {
-                showToast('Failed to create', 'error');
+                showToast('Failed to claim agent', 'error');
             }
         }
 
-        async function deleteApiKey(id) {
-            if (!confirm('Delete this API key?')) return;
+        async function loadFacts() {
+            loadFactsData();
+        }
+
+        let factsPage = 0;
+        const factsPageSize = 10;
+        
+        function onFactsDaysFilterChange() {
+            const daysFilter = document.getElementById('factsDaysFilter').value;
+            const customRange = document.getElementById('factsCustomDateRange');
+            
+            if (daysFilter === 'custom') {
+                customRange.classList.remove('hidden');
+            } else {
+                customRange.classList.add('hidden');
+            }
+            factsPage = 0;
+            loadFactsData();
+        }
+        
+        async function loadFactsData() {
+            const daysFilter = document.getElementById('factsDaysFilter').value;
+            
+            let url = `/admin/facts?limit=${factsPageSize}&offset=${factsPage * factsPageSize}`;
+            
+            if (daysFilter && daysFilter !== 'custom') {
+                url += `&days=${daysFilter}`;
+            } else if (daysFilter === 'custom') {
+                const startDate = document.getElementById('factsStartDate').value;
+                const endDate = document.getElementById('factsEndDate').value;
+                if (startDate) url += `&start_date=${startDate}`;
+                if (endDate) url += `&end_date=${endDate}`;
+            }
+            
             try {
-                await apiRequest(`/keys/${id}`, { method: 'DELETE' });
-                showToast('API key deleted');
+                const data = await apiRequest(url);
+                renderFactsList(data.data || [], data.total || 0);
+            } catch (error) {
+                console.error('Failed to load facts:', error);
+            }
+        }
+        
+        function renderFactsList(facts, total) {
+            const container = document.getElementById('factsList');
+            if (!facts || facts.length === 0) {
+                container.innerHTML = '<div class="p-6 text-center text-slate-500">No facts found.</div>';
+                document.getElementById('factsShowing').textContent = '0';
+                document.getElementById('factsTotal').textContent = '0';
+                return;
+            }
+            
+            const start = factsPage * factsPageSize + 1;
+            const end = Math.min(start + facts.length - 1, total);
+            
+            document.getElementById('factsShowing').textContent = `${start}-${end}`;
+            document.getElementById('factsTotal').textContent = total;
+            document.getElementById('factsPageInfo').textContent = `Page ${factsPage + 1}`;
+            
+            document.getElementById('factsPrevBtn').disabled = factsPage === 0;
+            document.getElementById('factsNextBtn').disabled = end >= total;
+            
+            container.innerHTML = facts.map(f => `
+                <div class="px-6 py-4 flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="brain" class="w-5 h-5 text-indigo-400"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm text-white">${escapeHtml(f.content)}</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-xs px-2 py-0.5 bg-slate-800 text-slate-400 rounded">${f.category || 'semantic'}</span>
+                            <span class="text-xs text-slate-500">${formatDate(f.created_at)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+        
+        function factsPrevPage() {
+            if (factsPage > 0) {
+                factsPage--;
+                loadFactsData();
+            }
+        }
+        
+        function factsNextPage() {
+            factsPage++;
+            loadFactsData();
+        }
+
+        function renderFacts(facts) {
+            renderFactsList(facts, facts.length);
+        }
+
+        async function loadApiKeys() {
+            await loadAgents();
+        }
+
+        function renderApiKeys(keys) {
+            renderAgents(keys);
+        }
+
+        async function createApiKey() {
+            await claimAgent();
+        }
+
+        async function deleteAgent(id) {
+            if (!confirm('Delete this agent?')) return;
+            try {
+                await apiRequest(`/admin/agents/${id}`, { method: 'DELETE' });
+                showToast('Agent deactivated');
                 loadApiKeys();
                 loadDashboardData();
             } catch (error) {
                 showToast('Failed to delete', 'error');
             }
+        }
+
+        async function deleteApiKey(id) {
+            deleteAgent(id);
         }
 
         function refreshData() {

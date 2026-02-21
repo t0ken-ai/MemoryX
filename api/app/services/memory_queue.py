@@ -62,7 +62,8 @@ def add_memory_task(
     user_id: str,
     content: str,
     metadata: Dict = None,
-    skip_judge: bool = False
+    skip_judge: bool = False,
+    api_key_id: int = None
 ) -> Dict[str, Any]:
     """
     异步添加记忆任务
@@ -72,6 +73,7 @@ def add_memory_task(
         content: 记忆内容
         metadata: 元数据
         skip_judge: 是否跳过LLM判断
+        api_key_id: API Key ID
         
     Returns:
         处理结果
@@ -93,7 +95,8 @@ def add_memory_task(
                 user_id=user_id,
                 content=content,
                 metadata=metadata,
-                skip_judge=skip_judge
+                skip_judge=skip_judge,
+                api_key_id=api_key_id
             )
         )
         
@@ -130,7 +133,8 @@ def batch_add_memory_task(
     self,
     user_id: str,
     contents: List[str],
-    metadatas: List[Dict] = None
+    metadatas: List[Dict] = None,
+    api_key_id: int = None
 ) -> List[Dict[str, Any]]:
     """
     异步批量添加记忆任务
@@ -139,6 +143,7 @@ def batch_add_memory_task(
         user_id: 用户ID
         contents: 记忆内容列表
         metadatas: 元数据列表
+        api_key_id: API Key ID
         
     Returns:
         处理结果列表
@@ -172,7 +177,8 @@ def batch_add_memory_task(
                     graph_memory_service.add_memory(
                         user_id=user_id,
                         content=content,
-                        metadata=metadata
+                        metadata=metadata,
+                        api_key_id=api_key_id
                     )
                 )
                 results.append(result)

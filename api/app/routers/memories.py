@@ -85,7 +85,7 @@ def get_current_user_with_quota(
     
     quota = get_or_create_quota(db, user.id)
     
-    return user.id, user.subscription_tier, quota, x_api_key
+    return user.id, user.subscription_tier, quota, api_key.id
 
 
 @router.post("/memories", response_model=dict)
@@ -100,7 +100,7 @@ async def create_memory(
     记忆添加操作通过 Celery 队列异步处理，防止 LLM 被打爆。
     返回 task_id 可用于查询处理状态。
     """
-    user_id, tier, quota, api_key = user_data
+    user_id, tier, quota, api_key_id = user_data
     
     can_create, remaining = quota.can_create_memory(tier)
     if not can_create:
@@ -115,7 +115,8 @@ async def create_memory(
     task = add_memory_task.delay(
         user_id=str(user_id),
         content=memory.content,
-        metadata=metadata
+        metadata=metadata,
+        api_key_id=api_key_id
     )
     
     quota.increment_memories_created()
@@ -142,7 +143,7 @@ async def batch_create_memories(
     批量记忆添加操作通过 Celery 队列异步处理。
     返回 task_id 可用于查询处理状态。
     """
-    user_id, tier, quota, api_key = user_data
+    user_id, tier, quota, api_key_id = user_data
     
     if len(batch.memories) == 0:
         raise HTTPException(status_code=400, detail="No memories provided")
@@ -176,7 +177,8 @@ async def batch_create_memories(
     task = batch_add_memory_task.delay(
         user_id=str(user_id),
         contents=contents,
-        metadatas=metadatas
+        metadatas=metadatas,
+        api_key_id=api_key_id
     )
     
     quota.increment_memories_created(len(batch.memories))

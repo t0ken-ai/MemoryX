@@ -69,6 +69,9 @@ class User(Base):
     
     firebase_uid = Column(String, nullable=True)
     
+    display_name = Column(String(100), nullable=True)
+    photo_url = Column(String(500), nullable=True)
+    
     merged_to_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     subscription_tier = Column(
@@ -164,6 +167,7 @@ class MemoryJudgment(Base):
     id = Column(Integer, primary_key=True, index=True)
     trace_id = Column(String(36), unique=True, index=True, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    api_key_id = Column(Integer, ForeignKey("api_keys.id"), nullable=True, index=True)
     
     operation_type = Column(String(20), nullable=False)
     

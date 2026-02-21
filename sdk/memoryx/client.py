@@ -71,17 +71,20 @@ class MemoryXClient:
         except Exception as e:
             raise MemoryXError(f"Request failed: {str(e)}")
     
-    def auto_register(self, agent_type: str = "python_sdk", agent_name: str = "memoryx-client") -> dict:
+    def auto_register(self, agent_type: str = "python_sdk", agent_name: str = None) -> dict:
         """
         Auto-register machine account
         
         Args:
             agent_type: Agent type (default: "python_sdk")
-            agent_name: Agent name (default: "memoryx-client")
+            agent_name: Agent name (default: hostname)
         
         Returns:
             Registration result with api_key, user_id, etc.
         """
+        if agent_name is None:
+            agent_name = socket.gethostname()
+        
         data = {
             "machine_fingerprint": self.machine_fingerprint,
             "agent_type": agent_type,

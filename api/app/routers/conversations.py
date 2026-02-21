@@ -124,7 +124,7 @@ async def filter_sensitive_with_llm(content: str) -> SensitiveFilterResult:
         )
 
 
-def process_conversation_task(conversation_data: dict):
+def process_conversation_task(conversation_data: dict, api_key_id: int = None):
     """后台任务：处理对话提取记忆 - 通过队列异步处理"""
     try:
         user_id = conversation_data["user_id"]
@@ -147,7 +147,8 @@ def process_conversation_task(conversation_data: dict):
                 "has_sensitive": filter_result.has_sensitive,
                 "source": "conversation_flush",
                 "project_id": conversation_data.get("project_id", "default")
-            }
+            },
+            api_key_id=api_key_id
         )
         
         logger.info(f"Queued memory task for user {user_id}: {task.id}")
@@ -179,7 +180,7 @@ def get_current_user_with_quota(
     
     quota = get_or_create_quota(db, user.id)
     
-    return user.id, user.subscription_tier, quota, x_api_key
+    return user.id, user.subscription_tier, quota, api_key.id
 
 
 @router.post("/conversations/flush")
@@ -197,7 +198,7 @@ async def flush_conversation(
     2. 格式校验（每条消息必须有 role、content、timestamp）
     3. 后台异步处理：敏感信息过滤 + LLM 提取记忆 + 向量化 + 图构建
     """
-    user_id, tier, quota, api_key = user_data
+    user_id, tier, quota, api_key_id = user_data
     
     if not request.messages or len(request.messages) == 0:
         raise HTTPException(status_code=400, detail="messages field is required")
@@ -216,7 +217,7 @@ async def flush_conversation(
         "project_id": "default"
     }
     
-    background_tasks.add_task(process_conversation_task, conversation_data)
+    background_tasks.add_task(process_conversation_task, conversation_data, api_key_id)
     
     quota.increment_memories_created()
     db.commit()
@@ -243,7 +244,7 @@ async def realtime_message(
     
     用于高优先级消息，绕过缓冲直接处理
     """
-    user_id, tier, quota, api_key = user_data
+    user_id, tier, quota, api_key_id = user_data
     
     if not message.content or len(message.content) < 2:
         return {"status": "skipped", "reason": "content_too_short"}
@@ -265,7 +266,8 @@ async def realtime_message(
             "tokens": message.tokens,
             "source": "realtime",
             "has_sensitive": filter_result.has_sensitive
-        }
+        },
+        api_key_id=api_key_id
     )
     
     quota.increment_memories_created()

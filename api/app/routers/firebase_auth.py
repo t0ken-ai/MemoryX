@@ -87,6 +87,8 @@ async def firebase_auth(
     
     email = firebase_user.get("email")
     firebase_uid = firebase_user.get("uid")
+    display_name = firebase_user.get("name", "")
+    photo_url = firebase_user.get("picture", "")
     
     if not email:
         raise HTTPException(status_code=401, detail="No email in token")
@@ -106,7 +108,9 @@ async def firebase_auth(
             email=email,
             hashed_password=get_password_hash(random_password),
             is_active=True,
-            firebase_uid=firebase_uid  # Store Firebase UID
+            firebase_uid=firebase_uid,
+            display_name=display_name,
+            photo_url=photo_url
         )
         db.add(user)
         db.commit()
@@ -125,7 +129,12 @@ async def firebase_auth(
         # Update Firebase UID if not set
         if not user.firebase_uid and firebase_uid:
             user.firebase_uid = firebase_uid
-            db.commit()
+        # Update display_name and photo_url if provided
+        if display_name and not user.display_name:
+            user.display_name = display_name
+        if photo_url and not user.photo_url:
+            user.photo_url = photo_url
+        db.commit()
     
     # Create access token (60 days)
     access_token = create_access_token(
@@ -139,6 +148,8 @@ async def firebase_auth(
         "user": {
             "id": user.id,
             "email": user.email,
+            "display_name": user.display_name,
+            "photo_url": user.photo_url,
             "is_new": user.created_at == user.updated_at if hasattr(user, 'updated_at') else False
         }
     }
