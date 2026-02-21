@@ -678,11 +678,11 @@
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li><code class="text-brand-cyan">POST</code> /api/memories</li>
-                        <li><code class="text-brand-cyan">GET</code> /api/memories</li>
-                        <li><code class="text-brand-cyan">GET</code> /api/memories/{id}</li>
-                        <li><code class="text-brand-cyan">PUT</code> /api/memories/{id}</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/memories/batch</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/memories/list</li>
                         <li><code class="text-brand-cyan">DELETE</code> /api/memories/{id}</li>
                         <li><code class="text-brand-cyan">POST</code> /api/memories/search</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/memories/graph/search</li>
                     </ul>
                 </div>
                 
@@ -694,11 +694,11 @@
                         <h3 class="font-semibold">Agent 管理</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
-                        <li><code class="text-brand-cyan">POST</code> /api/agents/auto-register</li>
-                        <li><code class="text-brand-cyan">POST</code> /api/agents/claim/init</li>
-                        <li><code class="text-brand-cyan">POST</code> /api/agents/claim/verify</li>
-                        <li><code class="text-brand-cyan">GET</code> /api/agents/machine-stats</li>
-                        <li><code class="text-brand-cyan">POST</code> /api/agents/merge</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/auto-register</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/claim/initiate</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/claim/verify</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/machine-stats</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/api-keys</li>
                     </ul>
                 </div>
                 
@@ -707,14 +707,14 @@
                         <div class="w-10 h-10 rounded-lg bg-brand-cyan/20 flex items-center justify-center">
                             <i data-lucide="key" class="w-5 h-5 text-brand-cyan"></i>
                         </div>
-                        <h3 class="font-semibold">认证 & 用户</h3>
+                        <h3 class="font-semibold">认证 & 订阅</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
-                        <li><code class="text-brand-cyan">POST</code> /api/auth/firebase</li>
-                        <li><code class="text-brand-cyan">POST</code> /api/auth/verify</li>
-                        <li><code class="text-brand-cyan">POST</code> /api/auth/refresh</li>
-                        <li><code class="text-brand-cyan">GET</code> /api/users/me</li>
-                        <li><code class="text-brand-cyan">GET</code> /api/api-keys</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/firebase</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/auth/me</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/subscription/status</li>
+                        <li><code class="text-brand-cyan">POST</code> /api/subscription/create-checkout-session</li>
+                        <li><code class="text-brand-cyan">GET</code> /api/quota</li>
                     </ul>
                 </div>
             </div>
