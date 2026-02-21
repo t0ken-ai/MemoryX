@@ -5,14 +5,16 @@ import email_validator
 # Trigger build: 2026-02-15
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException, Header, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, Header, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 import httpx
 import os
 import logging
+import time
 
 from app.core.config import get_settings
 from app.core.database import engine, Base, get_db
@@ -65,6 +67,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.time()
+        
+        real_ip = (
+            request.headers.get("CF-Connecting-IP") or
+            request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or
+            request.headers.get("X-Real-IP") or
+            request.client.host if request.client else "unknown"
+        )
+        
+        response = await call_next(request)
+        
+        process_time = time.time() - start_time
+        logger.info(
+            f'{real_ip} - "{request.method} {request.url.path}" '
+            f'{response.status_code} - {process_time:.3f}s'
+        )
+        
+        return response
+
+app.add_middleware(RequestLoggingMiddleware)
 
 # Include all routers
 app.include_router(auth.router, prefix="/api")
