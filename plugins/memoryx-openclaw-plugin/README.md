@@ -17,8 +17,16 @@ The plugin registers three tools that LLM can call during conversations:
 | Tool | Description | When to Use |
 |------|-------------|-------------|
 | `memoryx_recall` | Search through long-term memories | User asks "do you remember X?" or needs context |
+| `memoryx_store` | Save important information to memory | User says "remember this" or you identify important info |
 | `memoryx_list` | List all stored memories | User asks "what do you remember about me?" |
 | `memoryx_forget` | Delete a specific memory | User asks to forget/remove something |
+
+### memoryx_store Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `content` | string | Yes | The information to remember (e.g., "User prefers dark mode") |
+| `category` | enum | No | `preference`, `fact`, `plan`, `experience`, `opinion`, `other` |
 
 ### Example Usage
 
@@ -30,6 +38,9 @@ The plugin registers three tools that LLM can call during conversations:
 
 **User**: "Please forget about my old address"
 **LLM**: *calls `memoryx_forget` with memory_id* → Deletes the memory
+
+**User**: "Remember that my favorite color is blue"
+**LLM**: *calls `memoryx_store` with content="User's favorite color is blue" category="preference"* → Stores the memory
 
 ## Install
 

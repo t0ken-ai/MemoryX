@@ -641,6 +641,43 @@ class MemoryXPlugin {
         }
     }
     
+    public async store(content: string, category: string = "other"): Promise<{ success: boolean; task_id?: string; duplicate?: boolean; existing?: string }> {
+        this.init();
+        
+        if (!this.config.apiKey) {
+            log("Store failed: no API key");
+            return { success: false };
+        }
+        
+        try {
+            const response = await fetch(`${this.apiBase}/v1/memories`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Key": this.config.apiKey
+                },
+                body: JSON.stringify({
+                    content,
+                    project_id: this.config.projectId,
+                    metadata: { category, source: "function_call" }
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData: any = await response.json().catch(() => ({}));
+                log(`Store failed: ${response.status} ${JSON.stringify(errorData)}`);
+                return { success: false };
+            }
+            
+            const data: any = await response.json();
+            log(`Stored memory, task_id: ${data.task_id}`);
+            return { success: true, task_id: data.task_id };
+        } catch (e) {
+            log(`Store failed: ${e}`);
+            return { success: false };
+        }
+    }
+    
     public async list(limit: number = 10): Promise<any[]> {
         this.init();
         
@@ -699,7 +736,7 @@ let plugin: MemoryXPlugin;
 export default {
     id: "memoryx-openclaw-plugin",
     name: "MemoryX Realtime Plugin",
-    version: "1.1.16",
+    version: "1.1.17",
     description: "Real-time memory capture and recall for OpenClaw",
     
     register(api: any, pluginConfig?: PluginConfig): void {
@@ -843,6 +880,73 @@ export default {
                 }
             },
             { name: "memoryx_forget" }
+        );
+        
+        api.registerTool(
+            {
+                name: "memoryx_store",
+                label: "MemoryX Store",
+                description: "Save important information to long-term memory. Use when user explicitly asks to remember something, or when you identify important user preferences, facts, or decisions that should be persisted.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        content: {
+                            type: "string",
+                            description: "The information to remember. Should be a clear, concise statement. Examples: 'User prefers dark mode in all applications', 'User birthday is January 15th', 'User works as a software engineer at Acme Corp'"
+                        },
+                        category: {
+                            type: "string",
+                            enum: ["preference", "fact", "plan", "experience", "opinion", "other"],
+                            description: "Category of the memory: preference (user likes/dislikes), fact (objective info), plan (future goals), experience (past events), opinion (user's views), other"
+                        }
+                    },
+                    required: ["content"]
+                },
+                async execute(_toolCallId: string, params: any) {
+                    const { content, category = "other" } = params;
+                    
+                    if (!plugin) {
+                        return {
+                            content: [{ type: "text", text: "MemoryX plugin not initialized." }],
+                            details: { error: "not_initialized" }
+                        };
+                    }
+                    
+                    if (!content || content.trim().length < 5) {
+                        return {
+                            content: [{ type: "text", text: "Content too short. Please provide more meaningful information to remember." }],
+                            details: { error: "content_too_short" }
+                        };
+                    }
+                    
+                    try {
+                        const result = await plugin.store(content.trim(), category);
+                        
+                        if (result.success) {
+                            return {
+                                content: [{ type: "text", text: `Stored: "${content.slice(0, 100)}${content.length > 100 ? '...' : ''}"` }],
+                                details: { action: "stored", task_id: result.task_id }
+                            };
+                        } else if (result.duplicate) {
+                            return {
+                                content: [{ type: "text", text: `Similar memory already exists: "${result.existing}"` }],
+                                details: { action: "duplicate" }
+                            };
+                        } else {
+                            return {
+                                content: [{ type: "text", text: "Failed to store memory. Please try again." }],
+                                details: { error: "store_failed" }
+                            };
+                        }
+                    } catch (error: any) {
+                        return {
+                            content: [{ type: "text", text: `Failed to store memory: ${error.message}` }],
+                            details: { error: error.message }
+                        };
+                    }
+                }
+            },
+            { name: "memoryx_store" }
         );
         
         api.registerTool(
