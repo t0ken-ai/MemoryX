@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import Optional
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token, verify_token
 from app.core.database import User, APIKey
@@ -20,8 +21,8 @@ class UserCreate(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
-    display_name: str = None
-    photo_url: str = None
+    display_name: Optional[str] = None
+    photo_url: Optional[str] = None
     
     class Config:
         from_attributes = True

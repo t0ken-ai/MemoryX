@@ -729,6 +729,23 @@ class MemoryXPlugin {
             conversationStatus: status
         };
     }
+    
+    public async getAccountInfo(): Promise<{
+        apiKey: string | null;
+        projectId: string;
+        userId: string | null;
+        apiBaseUrl: string;
+        initialized: boolean;
+    }> {
+        this.init();
+        return {
+            apiKey: this.config.apiKey,
+            projectId: this.config.projectId,
+            userId: this.config.userId,
+            apiBaseUrl: this.config.apiBaseUrl,
+            initialized: this.config.initialized
+        };
+    }
 }
 
 let plugin: MemoryXPlugin;
@@ -736,7 +753,7 @@ let plugin: MemoryXPlugin;
 export default {
     id: "memoryx-openclaw-plugin",
     name: "MemoryX Realtime Plugin",
-    version: "1.1.18",
+    version: "1.1.19",
     description: "Real-time memory capture and recall for OpenClaw",
     
     register(api: any, pluginConfig?: PluginConfig): void {
@@ -996,6 +1013,62 @@ export default {
                 }
             },
             { name: "memoryx_list" }
+        );
+        
+        api.registerTool(
+            {
+                name: "memoryx_account_info",
+                label: "MemoryX Account Info",
+                description: "Get MemoryX account information including API Key, Project ID, User ID, and API Base URL. Use when user asks about their MemoryX account, API key, project settings, or account status. Returns all stored account configuration from local database.",
+                parameters: {
+                    type: "object",
+                    properties: {}
+                },
+                async execute(_toolCallId: string, params: any) {
+                    if (!plugin) {
+                        return {
+                            content: [{ type: "text", text: "MemoryX plugin not initialized." }],
+                            details: { error: "not_initialized" }
+                        };
+                    }
+                    
+                    try {
+                        const accountInfo = await plugin.getAccountInfo();
+                        
+                        if (!accountInfo) {
+                            return {
+                                content: [{ type: "text", text: "No account information found. The plugin may not be registered yet." }],
+                                details: { error: "no_account" }
+                            };
+                        }
+                        
+                        const lines = [
+                            "MemoryX Account Information:",
+                            `API Key: ${accountInfo.apiKey || 'Not set'}`,
+                            `Project ID: ${accountInfo.projectId || 'default'}`,
+                            `User ID: ${accountInfo.userId || 'Not set'}`,
+                            `API Base URL: ${accountInfo.apiBaseUrl || DEFAULT_API_BASE}`,
+                            `Initialized: ${accountInfo.initialized ? 'Yes' : 'No'}`
+                        ];
+                        
+                        return {
+                            content: [{ type: "text", text: lines.join("\n") }],
+                            details: { 
+                                apiKey: accountInfo.apiKey,
+                                projectId: accountInfo.projectId,
+                                userId: accountInfo.userId,
+                                apiBaseUrl: accountInfo.apiBaseUrl
+                            }
+                        };
+                    } catch (error: any) {
+                        return {
+                            content: [{ type: "text", text: `Failed to get account info: ${error.message}` }],
+                            details: { error: error.message }
+                        };
+                    }
+                }
+            },
+            { name: "memoryx_account_info" }
         );
         
         api.on("message_received", async (event: any, ctx: any) => {

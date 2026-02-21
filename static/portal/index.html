@@ -402,15 +402,11 @@
 
         // Check if user is already logged in
         onAuthStateChanged(auth, async (user) => {
-            // TEST MODE: Skip auth if ?test=1 in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('test') === '1') {
-                console.log('Test mode enabled');
-                document.getElementById('authModal').classList.add('hidden');
-                document.getElementById('mainApp').classList.remove('hidden');
-                authToken = localStorage.getItem('memoryx_test_key') || '';
+            // Check if we have a token in localStorage
+            const storedToken = localStorage.getItem('memoryx_token');
+            if (storedToken) {
+                showMainApp();
                 loadDashboardData();
-                lucide.createIcons();
                 return;
             }
             
@@ -517,11 +513,6 @@
         const API_BASE = '/api';
         let authToken = localStorage.getItem('memoryx_token');
         let resendTimer = null;
-        
-        // TEST MODE: Auto-set token if test=1
-        if (new URLSearchParams(window.location.search).get('test') === '1') {
-            authToken = 'test_token';
-        }
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -640,25 +631,30 @@
         function showMainApp() {
             document.getElementById('authModal').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            
-            const email = localStorage.getItem('memoryx_email') || '';
-            const displayName = localStorage.getItem('memoryx_display_name') || '';
-            const photoURL = localStorage.getItem('memoryx_photo_url') || '';
-            
-            // Update display name
-            const displayText = displayName || email.split('@')[0] || 'User';
-            document.getElementById('userDisplayName').textContent = displayText;
-            document.getElementById('userEmail').textContent = email;
-            
-            // Update avatar - use photo if available, otherwise show first letter
-            const avatarEl = document.getElementById('userAvatar');
-            if (photoURL) {
-                avatarEl.innerHTML = `<img src="${photoURL}" class="w-8 h-8 rounded-full object-cover" alt="${displayText}" onerror="this.parentElement.innerHTML='${displayText.charAt(0).toUpperCase()}'">`;
-            } else {
-                avatarEl.textContent = displayText.charAt(0).toUpperCase();
-            }
-            
+            loadUserInfo();
             lucide.createIcons();
+        }
+
+        async function loadUserInfo() {
+            try {
+                const user = await apiRequest('/auth/me');
+                const email = user.email || '';
+                const displayName = user.display_name || '';
+                const photoURL = user.photo_url || '';
+                
+                const displayText = displayName || email.split('@')[0] || 'User';
+                document.getElementById('userDisplayName').textContent = displayText;
+                document.getElementById('userEmail').textContent = email;
+                
+                const avatarEl = document.getElementById('userAvatar');
+                if (photoURL) {
+                    avatarEl.innerHTML = `<img src="${photoURL}" class="w-8 h-8 rounded-full object-cover" alt="${displayText}" onerror="this.parentElement.innerHTML='${displayText.charAt(0).toUpperCase()}'">`;
+                } else {
+                    avatarEl.textContent = displayText.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+            }
         }
 
         async function logout() {
@@ -697,17 +693,24 @@
                 'Content-Type': 'application/json',
                 ...options.headers
             };
-            
-            if (authToken) {
-                headers['Authorization'] = `Bearer ${authToken}`;
+
+            const token = authToken || localStorage.getItem('memoryx_token');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
             }
-            
+
+            console.log('API Request:', API_BASE + endpoint, 'Headers:', headers);
+
             const response = await fetch(`${API_BASE}${endpoint}`, {
                 headers,
                 ...options
             });
-            
-            if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const errorMsg = errorData.detail || errorData.message || `API error: ${response.status}`;
+                throw new Error(errorMsg);
+            }
             return response.json();
         }
 
@@ -949,8 +952,10 @@
         async function claimAgent() {
             const apiKey = prompt('Enter your API Key to claim agent:', 'omx_...');
             if (!apiKey) return;
-            
+
             try {
+                console.log('Claiming agent with API key:', apiKey);
+                console.log('Auth token:', authToken);
                 const result = await apiRequest('/admin/agents/claim', {
                     method: 'POST',
                     body: JSON.stringify({ api_key: apiKey })
@@ -959,7 +964,8 @@
                 loadAgents();
                 loadDashboardData();
             } catch (error) {
-                showToast('Failed to claim agent', 'error');
+                console.error('Claim agent error:', error);
+                showToast(error.message || 'Failed to claim agent', 'error');
             }
         }
 

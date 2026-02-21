@@ -63,7 +63,7 @@ async def list_agents(
         
         last_memory = db.query(Memory).filter(
             Memory.user_id == user_id,
-            Memory.project_id == key.project_id
+            Memory.project_id == cast(key.project_id, String)
         ).order_by(Memory.created_at.desc()).first()
         
         agents.append({
