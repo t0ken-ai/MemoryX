@@ -5,6 +5,34 @@ import * as os from 'os';
 
 let sdk: MemoryXSDK | null = null;
 let participant: vscode.ChatParticipant | null = null;
+let isFirstUse: boolean = true;
+
+const USAGE_GUIDE = `
+## 📖 MemoryX 使用指南
+
+### 基本用法
+直接在聊天中使用 \`@memoryx\`：
+\`\`\`
+@memoryx 帮我写一个登录函数
+\`\`\`
+
+### 工作原理
+1. **自动采集**: 你的对话会被自动保存到 MemoryX
+2. **智能召回**: 相关的历史记忆会自动显示
+
+### 可用命令
+- \`@memoryx /search <关键词>\` - 搜索记忆
+- \`@memoryx /list\` - 列出最近记忆
+- \`@memoryx /remember\` - 手动保存对话
+
+### 配置
+在 VS Code 设置中搜索 "MemoryX" 可以配置：
+- API URL
+- API Key (留空自动注册)
+- 自动采集/召回开关
+
+---
+`;
 
 const STORAGE_DIR = path.join(os.homedir(), '.memoryx', 'vscode-extension');
 
@@ -78,6 +106,33 @@ export function activate(context: vscode.ExtensionContext) {
             }
         })
     );
+    
+    // Show welcome message on activation (visible in Output and as notification)
+    console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║                     🧠 MemoryX 已激活                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  在 VS Code Chat 中使用 @memoryx 开始对话                     ║
+║                                                              ║
+║  示例:                                                       ║
+║    @memoryx 帮我写一个登录函数                                ║
+║    @memoryx /search 认证                                     ║
+║    @memoryx /list                                            ║
+╚══════════════════════════════════════════════════════════════╝
+    `);
+    
+    // Show notification to user
+    vscode.window.showInformationMessage(
+        '🧠 MemoryX 已激活！在 Chat 中使用 @memoryx 开始。',
+        '打开 Chat',
+        '查看文档'
+    ).then(selection => {
+        if (selection === '打开 Chat') {
+            vscode.commands.executeCommand('workbench.panel.chat.view.copilot.focus');
+        } else if (selection === '查看文档') {
+            vscode.env.openExternal(vscode.Uri.parse('https://github.com/t0ken-ai/MemoryX#readme'));
+        }
+    });
     
     console.log('MemoryX extension activated successfully!');
 }
@@ -158,7 +213,13 @@ async function handler(
             }
         }
         
-        // 3. Show confirmation
+        // 3. Show usage guide on first use
+        if (isFirstUse) {
+            isFirstUse = false;
+            stream.markdown(USAGE_GUIDE);
+        }
+        
+        // 4. Show confirmation
         const stats = await sdkInstance.getQueueStats();
         stream.markdown(`✅ **Conversation captured** (${stats.messageCount} messages in queue)\n`);
         
