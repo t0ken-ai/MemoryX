@@ -1,4 +1,5 @@
 from celery import Celery
+from kombu import Queue
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -33,16 +34,6 @@ celery_app.conf.update(
 )
 
 celery_app.conf.task_queues = [
-    {
-        "name": "memory_pro",
-        "exchange": "memory_pro",
-        "routing_key": "memory_pro",
-        "priority": 10,
-    },
-    {
-        "name": "memory_free",
-        "exchange": "memory_free",
-        "routing_key": "memory_free",
-        "priority": 1,
-    },
+    Queue("memory_pro", routing_key="memory_pro", priority=10),
+    Queue("memory_free", routing_key="memory_free", priority=1),
 ]
