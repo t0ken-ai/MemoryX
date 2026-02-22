@@ -18,37 +18,20 @@
  * 3. Use dynamic import() for better-sqlite3: await import("better-sqlite3")
  * 4. Use setImmediate() for deferred operations
  * 
- * See: https://github.com/openclaw/openclaw (memory-lancedb plugin pattern)
+ * This version uses @t0ken.ai/memoryx-sdk with conversation preset:
+ * - maxTokens: 30000 (flush when reaching token limit)
+ * - intervalMs: 300000 (flush after 5 minutes idle)
  */
 
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
-import * as crypto from "crypto";
-import { getEncoding } from "js-tiktoken";
 
 const DEFAULT_API_BASE = "https://t0ken.ai/api";
-
 const PLUGIN_DIR = path.join(os.homedir(), ".openclaw", "extensions", "memoryx-openclaw-plugin");
 
 let logStream: fs.WriteStream | null = null;
 let logStreamReady = false;
-let tokenizer: ReturnType<typeof getEncoding> | null = null;
-
-function getTokenizer(): ReturnType<typeof getEncoding> {
-    if (!tokenizer) {
-        tokenizer = getEncoding("cl100k_base");
-    }
-    return tokenizer;
-}
-
-function countTokens(text: string): number {
-    try {
-        return getTokenizer().encode(text).length;
-    } catch {
-        return Math.ceil(text.length / 4);
-    }
-}
 
 function ensureDir(): void {
     if (!fs.existsSync(PLUGIN_DIR)) {
@@ -76,21 +59,6 @@ interface PluginConfig {
     apiBaseUrl?: string;
 }
 
-interface MemoryXConfig {
-    apiKey: string | null;
-    projectId: string;
-    userId: string | null;
-    initialized: boolean;
-    apiBaseUrl: string;
-}
-
-interface Message {
-    role: string;
-    content: string;
-    tokens: number;
-    timestamp: number;
-}
-
 interface RecallResult {
     memories: Array<{
         id: string;
@@ -109,423 +77,68 @@ interface RecallResult {
     upgradeHint?: string;
 }
 
-interface QueueMessage {
-    id: number;
-    conversation_id: string;
-    conversation_created_at: number;
-    role: string;
-    content: string;
-    timestamp: number;
-    retry_count: number;
-}
+// Lazy-loaded SDK instance
+let sdkInstance: any = null;
+let sdkInitPromise: Promise<any> | null = null;
 
-let dbPromise: Promise<any> | null = null;
-
-let isSending: boolean = false;
-
-async function getDb(): Promise<any> {
-    if (dbPromise) return dbPromise;
+async function getSDK(pluginConfig?: PluginConfig): Promise<any> {
+    if (sdkInstance) return sdkInstance;
     
-    dbPromise = (async () => {
-        ensureDir();
-        const Database = (await import("better-sqlite3")).default;
-        const dbPath = path.join(PLUGIN_DIR, "memoryx.db");
-        const db = new Database(dbPath);
+    if (sdkInitPromise) return sdkInitPromise;
+    
+    sdkInitPromise = (async () => {
+        // Dynamic import SDK
+        const { MemoryXSDK } = await import("@t0ken.ai/memoryx-sdk");
         
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS config (
-                key TEXT PRIMARY KEY,
-                value TEXT
-            );
-            
-            CREATE TABLE IF NOT EXISTS send_queue (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                conversation_id TEXT NOT NULL,
-                conversation_created_at INTEGER NOT NULL,
-                role TEXT NOT NULL,
-                content TEXT NOT NULL,
-                timestamp INTEGER NOT NULL,
-                retry_count INTEGER DEFAULT 0
-            );
-            
-            CREATE INDEX IF NOT EXISTS idx_send_queue_created ON send_queue(conversation_created_at);
-            CREATE INDEX IF NOT EXISTS idx_send_queue_conversation ON send_queue(conversation_id);
-        `);
+        // Use conversation preset: maxTokens: 30000, intervalMs: 300000 (5 min)
+        sdkInstance = new MemoryXSDK({
+            preset: 'conversation',
+            apiUrl: pluginConfig?.apiBaseUrl || DEFAULT_API_BASE,
+            autoRegister: true,
+            agentType: 'openclaw',
+            storageDir: PLUGIN_DIR
+        });
         
-        return db;
+        // Set debug mode
+        const { setDebug } = await import("@t0ken.ai/memoryx-sdk");
+        setDebug(true);
+        
+        log("SDK initialized with conversation preset (30k tokens / 5min idle)");
+        return sdkInstance;
     })();
     
-    return dbPromise;
-}
-
-class SQLiteStorage {
-    static async loadConfig(): Promise<MemoryXConfig | null> {
-        try {
-            const db = await getDb();
-            const row = db.prepare("SELECT value FROM config WHERE key = 'config'").get();
-            if (row) {
-                return JSON.parse(row.value);
-            }
-        } catch (e) {
-            log(`Failed to load config: ${e}`);
-        }
-        return null;
-    }
-    
-    static async saveConfig(config: MemoryXConfig): Promise<void> {
-        try {
-            const db = await getDb();
-            db.prepare("INSERT OR REPLACE INTO config (key, value) VALUES ('config', ?)").run(JSON.stringify(config));
-        } catch (e) {
-            log(`Failed to save config: ${e}`);
-        }
-    }
-    
-    static async addConversationToQueue(conversationId: string, conversationCreatedAt: number, messages: Message[]): Promise<void> {
-        const db = await getDb();
-        const stmt = db.prepare(`
-            INSERT INTO send_queue (conversation_id, conversation_created_at, role, content, timestamp)
-            VALUES (?, ?, ?, ?, ?)
-        `);
-        for (const msg of messages) {
-            stmt.run(conversationId, conversationCreatedAt, msg.role, msg.content, msg.timestamp);
-        }
-    }
-    
-    static async getNextConversation(): Promise<{ conversationId: string; conversationCreatedAt: number; messages: QueueMessage[] } | null> {
-        const db = await getDb();
-        const row = db.prepare(`
-            SELECT conversation_id, MIN(conversation_created_at) as conversation_created_at
-            FROM send_queue
-            GROUP BY conversation_id
-            ORDER BY MIN(conversation_created_at) ASC
-            LIMIT 1
-        `).get() as any;
-        
-        if (!row) return null;
-        
-        const messages = db.prepare(`
-            SELECT id, conversation_id, conversation_created_at, role, content, timestamp, retry_count
-            FROM send_queue
-            WHERE conversation_id = ?
-            ORDER BY id ASC
-        `).all(row.conversation_id) as QueueMessage[];
-        
-        return {
-            conversationId: row.conversation_id,
-            conversationCreatedAt: row.conversation_created_at,
-            messages
-        };
-    }
-    
-    static async deleteConversation(conversationId: string): Promise<void> {
-        const db = await getDb();
-        db.prepare("DELETE FROM send_queue WHERE conversation_id = ?").run(conversationId);
-    }
-    
-    static async incrementRetryByConversation(conversationId: string): Promise<void> {
-        const db = await getDb();
-        db.prepare("UPDATE send_queue SET retry_count = retry_count + 1 WHERE conversation_id = ?").run(conversationId);
-    }
-    
-    static async getQueueStats(conversationId: string): Promise<{ count: number; rounds: number }> {
-        const db = await getDb();
-        const rows = db.prepare(`
-            SELECT role FROM send_queue 
-            WHERE conversation_id = ? 
-            ORDER BY id ASC
-        `).all(conversationId) as any[];
-        
-        let rounds = 0;
-        let lastRole = "";
-        for (const row of rows) {
-            if (row.role === "assistant" && lastRole === "user") {
-                rounds++;
-            }
-            lastRole = row.role;
-        }
-        
-        return { count: rows.length, rounds };
-    }
-    
-    static async clearOldConversations(maxAge: number = 7 * 24 * 60 * 60): Promise<void> {
-        const db = await getDb();
-        const cutoff = Math.floor(Date.now() / 1000) - maxAge;
-        db.prepare("DELETE FROM send_queue WHERE conversation_created_at < ?").run(cutoff);
-    }
-    
-    static async getQueueLength(): Promise<number> {
-        const db = await getDb();
-        const row = db.prepare("SELECT COUNT(DISTINCT conversation_id) as count FROM send_queue").get() as any;
-        return row?.count || 0;
-    }
-}
-
-class ConversationManager {
-    private currentConversationId: string = "";
-    private conversationCreatedAt: number = Math.floor(Date.now() / 1000);
-    private lastActivityAt: number = Date.now();
-    
-    private readonly ROUND_THRESHOLD = 2;
-    private readonly TIMEOUT_MS = 30 * 60 * 1000;
-    
-    constructor() {
-        this.currentConversationId = this.generateId();
-    }
-    
-    private generateId(): string {
-        return `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-    
-    getConversationId(): string {
-        return this.currentConversationId;
-    }
-    
-    async addMessage(role: string, content: string): Promise<boolean> {
-        if (!content || content.length < 2) {
-            return false;
-        }
-        
-        const db = await getDb();
-        db.prepare(`
-            INSERT INTO send_queue (conversation_id, conversation_created_at, role, content, timestamp)
-            VALUES (?, ?, ?, ?, ?)
-        `).run(this.currentConversationId, this.conversationCreatedAt, role, content, Date.now());
-        
-        this.lastActivityAt = Date.now();
-        
-        const stats = await SQLiteStorage.getQueueStats(this.currentConversationId);
-        return stats.rounds >= this.ROUND_THRESHOLD;
-    }
-    
-    async shouldFlush(): Promise<boolean> {
-        const stats = await SQLiteStorage.getQueueStats(this.currentConversationId);
-        if (stats.count === 0) {
-            return false;
-        }
-        
-        if (stats.rounds >= this.ROUND_THRESHOLD) {
-            return true;
-        }
-        
-        const elapsed = Date.now() - this.lastActivityAt;
-        if (elapsed > this.TIMEOUT_MS) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    startNewConversation(): void {
-        this.currentConversationId = this.generateId();
-        this.conversationCreatedAt = Math.floor(Date.now() / 1000);
-        this.lastActivityAt = Date.now();
-    }
-    
-    async getStatus(): Promise<{ messageCount: number; conversationId: string; rounds: number }> {
-        const stats = await SQLiteStorage.getQueueStats(this.currentConversationId);
-        return {
-            messageCount: stats.count,
-            conversationId: this.currentConversationId,
-            rounds: stats.rounds
-        };
-    }
+    return sdkInitPromise;
 }
 
 class MemoryXPlugin {
-    private config: MemoryXConfig = {
-        apiKey: null,
-        projectId: "default",
-        userId: null,
-        initialized: false,
-        apiBaseUrl: DEFAULT_API_BASE
-    };
-    
-    private conversationManager: ConversationManager = new ConversationManager();
-    private flushTimer: any = null;
-    private sendQueueTimer: any = null;
-    private readonly FLUSH_CHECK_INTERVAL = 30000;
-    private readonly SEND_QUEUE_INTERVAL = 5000;
-    private readonly MAX_RETRY_COUNT = 5;
-    private pluginConfig: PluginConfig | null = null;
+    private pluginConfig: PluginConfig | undefined;
     private initialized: boolean = false;
     
     constructor(pluginConfig?: PluginConfig) {
-        this.pluginConfig = pluginConfig || null;
-        if (pluginConfig?.apiBaseUrl) {
-            this.config.apiBaseUrl = pluginConfig.apiBaseUrl;
-        }
-        this.config.initialized = true;
+        this.pluginConfig = pluginConfig;
     }
     
-    init(): void {
+    async init(): Promise<void> {
         if (this.initialized) return;
         this.initialized = true;
         
         log("Async init started");
-        this.loadConfig().then(() => {
-            log(`Config loaded, apiKey: ${this.config.apiKey ? 'present' : 'missing'}`);
-            this.startFlushTimer();
-            this.startSendQueueTimer();
-            SQLiteStorage.clearOldConversations().catch(() => {});
-            this.processSendQueue();
-            
-            if (!this.config.apiKey) {
-                log("Starting auto-register");
-                this.autoRegister().catch(e => log(`Auto-register failed: ${e}`));
-            }
-        }).catch(e => log(`Init failed: ${e}`));
-    }
-    
-    private get apiBase(): string {
-        return this.config.apiBaseUrl || DEFAULT_API_BASE;
-    }
-    
-    private async loadConfig(): Promise<void> {
-        const stored = await SQLiteStorage.loadConfig();
-        if (stored) {
-            this.config = { 
-                ...this.config, 
-                ...stored,
-                apiBaseUrl: this.pluginConfig?.apiBaseUrl || stored.apiBaseUrl || this.config.apiBaseUrl
-            };
-        }
-    }
-    
-    private async saveConfig(): Promise<void> {
-        await SQLiteStorage.saveConfig(this.config);
-    }
-    
-    private async autoRegister(): Promise<void> {
         try {
-            const fingerprint = this.getMachineFingerprint();
-            
-            const response = await fetch(`${this.apiBase}/agents/auto-register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    machine_fingerprint: fingerprint,
-                    agent_type: "openclaw",
-                    agent_name: os.hostname(),
-                    platform: os.platform(),
-                    platform_version: os.release()
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Auto-register failed: ${response.status}`);
-            }
-            
-            const data: any = await response.json();
-            this.config.apiKey = data.api_key;
-            this.config.projectId = String(data.project_id);
-            this.config.userId = data.agent_id;
-            await this.saveConfig();
-            log("Auto-registered successfully");
+            await getSDK(this.pluginConfig);
+            log("SDK ready");
         } catch (e) {
-            log(`Auto-register failed: ${e}`);
+            log(`Init failed: ${e}`);
         }
-    }
-    
-    private getMachineFingerprint(): string {
-        const components = [
-            os.hostname(),
-            os.platform(),
-            os.arch(),
-            os.cpus()[0]?.model || "unknown",
-            os.totalmem()
-        ];
-        
-        const raw = components.join("|");
-        return crypto.createHash("sha256").update(raw).digest("hex").slice(0, 32);
-    }
-    
-    private startFlushTimer(): void {
-        this.flushTimer = setInterval(async () => {
-            if (await this.conversationManager.shouldFlush()) {
-                this.conversationManager.startNewConversation();
-            }
-        }, this.FLUSH_CHECK_INTERVAL);
-    }
-    
-    private startSendQueueTimer(): void {
-        this.sendQueueTimer = setInterval(() => {
-            this.processSendQueue();
-        }, this.SEND_QUEUE_INTERVAL);
-    }
-    
-    private async processSendQueue(): Promise<void> {
-        if (isSending) return;
-        if (!this.config.apiKey) return;
-        
-        isSending = true;
-        
-        try {
-            await SQLiteStorage.clearOldConversations();
-            
-            const conversation = await SQLiteStorage.getNextConversation();
-            if (!conversation) {
-                isSending = false;
-                return;
-            }
-            
-            const { conversationId, messages } = conversation;
-            
-            const maxRetry = Math.max(...messages.map(m => m.retry_count));
-            if (maxRetry >= this.MAX_RETRY_COUNT) {
-                log(`Deleting conversation ${conversationId}: max retries exceeded`);
-                await SQLiteStorage.deleteConversation(conversationId);
-                isSending = false;
-                return;
-            }
-            
-            log(`Sending conversation ${conversationId} (${messages.length} messages)`);
-            
-            try {
-                const response = await fetch(`${this.apiBase}/v1/conversations/flush`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-API-Key": this.config.apiKey
-                    },
-                    body: JSON.stringify({
-                        conversation_id: conversationId,
-                        messages: messages.map(m => ({
-                            role: m.role,
-                            content: m.content,
-                            timestamp: m.timestamp,
-                            tokens: countTokens(m.content)
-                        }))
-                    })
-                });
-                
-                if (response.ok) {
-                    await SQLiteStorage.deleteConversation(conversationId);
-                    const result: any = await response.json();
-                    log(`Sent conversation ${conversationId}, extracted ${result.extracted_count || 0} memories`);
-                } else {
-                    await SQLiteStorage.incrementRetryByConversation(conversationId);
-                    const errorData: any = await response.json().catch(() => ({}));
-                    log(`Failed to send conversation ${conversationId}: ${response.status} ${JSON.stringify(errorData)}`);
-                }
-            } catch (e) {
-                await SQLiteStorage.incrementRetryByConversation(conversationId);
-                log(`Error sending conversation ${conversationId}: ${e}`);
-            }
-        } catch (e) {
-            log(`Process send queue failed: ${e}`);
-        }
-        
-        isSending = false;
     }
     
     public async onMessage(role: string, content: string): Promise<boolean> {
-        this.init();
+        await this.init();
         
         if (!content || content.length < 2) {
             return false;
         }
         
+        // Skip short messages
         const skipPatterns = [
             /^[好的ok谢谢嗯啊哈哈你好hihello拜拜再见]{1,5}$/i,
             /^[？?！!。,，\s]{1,10}$/
@@ -537,69 +150,42 @@ class MemoryXPlugin {
             }
         }
         
-        const shouldFlush = await this.conversationManager.addMessage(role, content);
-        
-        if (shouldFlush) {
-            this.conversationManager.startNewConversation();
+        try {
+            const sdk = await getSDK(this.pluginConfig);
+            if (role === 'user') {
+                await sdk.addUserMessage(content);
+            } else {
+                await sdk.addAssistantMessage(content);
+            }
+            return true;
+        } catch (e) {
+            log(`onMessage failed: ${e}`);
+            return false;
         }
-        
-        return true;
     }
     
     public async recall(query: string, limit: number = 5): Promise<RecallResult> {
-        this.init();
-        
-        if (!this.config.apiKey || !query || query.length < 2) {
-            return { memories: [], relatedMemories: [], isLimited: false, remainingQuota: 0 };
-        }
+        await this.init();
         
         try {
-            const response = await fetch(`${this.apiBase}/v1/memories/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-API-Key": this.config.apiKey
-                },
-                body: JSON.stringify({
-                    query,
-                    project_id: this.config.projectId,
-                    limit
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData: any = await response.json().catch(() => ({}));
-                
-                if (response.status === 402 || response.status === 429) {
-                    return {
-                        memories: [],
-                        relatedMemories: [],
-                        isLimited: true,
-                        remainingQuota: 0,
-                        upgradeHint: errorData.detail || "云端查询配额已用尽，请升级到付费版"
-                    };
-                }
-                
-                throw new Error(`Search failed: ${response.status}`);
-            }
-            
-            const data: any = await response.json();
+            const sdk = await getSDK(this.pluginConfig);
+            const result = await sdk.search(query, limit);
             
             return {
-                memories: (data.data || []).map((m: any) => ({
+                memories: (result.data || []).map((m: any) => ({
                     id: m.id,
-                    content: m.memory || m.content,
+                    content: m.content || m.memory,
                     category: m.category || "other",
                     score: m.score || 0.5
                 })),
-                relatedMemories: (data.related_memories || []).map((m: any) => ({
+                relatedMemories: (result.related_memories || []).map((m: any) => ({
                     id: m.id,
-                    content: m.memory || m.content,
+                    content: m.content || m.memory,
                     category: m.category || "other",
                     score: m.score || 0
                 })),
                 isLimited: false,
-                remainingQuota: data.remaining_quota ?? -1
+                remainingQuota: result.remaining_quota ?? -1
             };
         } catch (e) {
             log(`Recall failed: ${e}`);
@@ -608,70 +194,37 @@ class MemoryXPlugin {
     }
     
     public async endConversation(): Promise<void> {
-        this.conversationManager.startNewConversation();
-        log("Conversation ended, starting new conversation");
+        try {
+            const sdk = await getSDK(this.pluginConfig);
+            sdk.startNewConversation();
+            log("Conversation ended, starting new conversation");
+        } catch (e) {
+            log(`End conversation failed: ${e}`);
+        }
     }
     
     public async forget(memoryId: string): Promise<boolean> {
-        this.init();
-        
-        if (!this.config.apiKey) {
-            log("Forget failed: no API key");
-            return false;
-        }
+        await this.init();
         
         try {
-            const response = await fetch(`${this.apiBase}/v1/memories/${memoryId}`, {
-                method: "DELETE",
-                headers: {
-                    "X-API-Key": this.config.apiKey
-                }
-            });
-            
-            if (response.ok) {
-                log(`Forgot memory ${memoryId}`);
-                return true;
-            }
-            
-            log(`Forget failed: ${response.status}`);
-            return false;
+            const sdk = await getSDK(this.pluginConfig);
+            await sdk.delete(memoryId);
+            log(`Forgot memory ${memoryId}`);
+            return true;
         } catch (e) {
             log(`Forget failed: ${e}`);
             return false;
         }
     }
     
-    public async store(content: string): Promise<{ success: boolean; task_id?: string; duplicate?: boolean; existing?: string }> {
-        this.init();
-        
-        if (!this.config.apiKey) {
-            log("Store failed: no API key");
-            return { success: false };
-        }
+    public async store(content: string): Promise<{ success: boolean; task_id?: string }> {
+        await this.init();
         
         try {
-            const response = await fetch(`${this.apiBase}/v1/memories`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-API-Key": this.config.apiKey
-                },
-                body: JSON.stringify({
-                    content,
-                    project_id: this.config.projectId,
-                    metadata: { source: "function_call" }
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData: any = await response.json().catch(() => ({}));
-                log(`Store failed: ${response.status} ${JSON.stringify(errorData)}`);
-                return { success: false };
-            }
-            
-            const data: any = await response.json();
-            log(`Stored memory, task_id: ${data.task_id}`);
-            return { success: true, task_id: data.task_id };
+            const sdk = await getSDK(this.pluginConfig);
+            const result = await sdk.addMemory(content);
+            log(`Stored memory, result: ${JSON.stringify(result)}`);
+            return { success: true, task_id: result?.task_id };
         } catch (e) {
             log(`Store failed: ${e}`);
             return { success: false };
@@ -679,36 +232,14 @@ class MemoryXPlugin {
     }
     
     public async list(limit: number = 10): Promise<any[]> {
-        this.init();
-        
-        if (!this.config.apiKey) {
-            log("List failed: no API key");
-            return [];
-        }
+        await this.init();
         
         try {
-            const response = await fetch(`${this.apiBase}/v1/memories/search`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-API-Key": this.config.apiKey
-                },
-                body: JSON.stringify({
-                    query: "*",
-                    project_id: this.config.projectId,
-                    limit
-                })
-            });
-            
-            if (!response.ok) {
-                log(`List failed: ${response.status}`);
-                return [];
-            }
-            
-            const data: any = await response.json();
-            return (data.data || []).map((m: any) => ({
+            const sdk = await getSDK(this.pluginConfig);
+            const result = await sdk.list(limit, 0);
+            return (result.data || result.memories || []).map((m: any) => ({
                 id: m.id,
-                content: m.memory || m.content,
+                content: m.content || m.memory,
                 category: m.category || "other"
             }));
         } catch (e) {
@@ -720,14 +251,25 @@ class MemoryXPlugin {
     public async getStatus(): Promise<{ 
         initialized: boolean; 
         hasApiKey: boolean; 
-        conversationStatus: { messageCount: number; conversationId: string; rounds: number } 
+        queueStats: any;
     }> {
-        const status = await this.conversationManager.getStatus();
-        return {
-            initialized: this.config.initialized,
-            hasApiKey: !!this.config.apiKey,
-            conversationStatus: status
-        };
+        try {
+            const sdk = await getSDK(this.pluginConfig);
+            const accountInfo = await sdk.getAccountInfo();
+            const queueStats = await sdk.getQueueStats();
+            
+            return {
+                initialized: true,
+                hasApiKey: !!accountInfo?.apiKey,
+                queueStats
+            };
+        } catch (e) {
+            return {
+                initialized: false,
+                hasApiKey: false,
+                queueStats: null
+            };
+        }
     }
     
     public async getAccountInfo(): Promise<{
@@ -737,14 +279,27 @@ class MemoryXPlugin {
         apiBaseUrl: string;
         initialized: boolean;
     }> {
-        this.init();
-        return {
-            apiKey: this.config.apiKey,
-            projectId: this.config.projectId,
-            userId: this.config.userId,
-            apiBaseUrl: this.config.apiBaseUrl,
-            initialized: this.config.initialized
-        };
+        await this.init();
+        
+        try {
+            const sdk = await getSDK(this.pluginConfig);
+            const info = await sdk.getAccountInfo();
+            return {
+                apiKey: info?.apiKey || null,
+                projectId: info?.projectId || "default",
+                userId: info?.userId || null,
+                apiBaseUrl: info?.apiBaseUrl || DEFAULT_API_BASE,
+                initialized: true
+            };
+        } catch (e) {
+            return {
+                apiKey: null,
+                projectId: "default",
+                userId: null,
+                apiBaseUrl: DEFAULT_API_BASE,
+                initialized: false
+            };
+        }
     }
 }
 
@@ -753,8 +308,8 @@ let plugin: MemoryXPlugin;
 export default {
     id: "memoryx-openclaw-plugin",
     name: "MemoryX Realtime Plugin",
-    version: "1.1.19",
-    description: "Real-time memory capture and recall for OpenClaw",
+    version: "2.0.0",
+    description: "Real-time memory capture and recall for OpenClaw (powered by @t0ken.ai/memoryx-sdk)",
     
     register(api: any, pluginConfig?: PluginConfig): void {
         api.logger.info("[MemoryX] Plugin registering...");
@@ -938,11 +493,6 @@ export default {
                             return {
                                 content: [{ type: "text", text: `Stored: "${content.slice(0, 100)}${content.length > 100 ? '...' : ''}"` }],
                                 details: { action: "stored", task_id: result.task_id }
-                            };
-                        } else if (result.duplicate) {
-                            return {
-                                content: [{ type: "text", text: `Similar memory already exists: "${result.existing}"` }],
-                                details: { action: "duplicate" }
                             };
                         } else {
                             return {
@@ -1131,8 +681,8 @@ export default {
             }
         });
         
-        api.logger.info("[MemoryX] Plugin registered successfully");
+        api.logger.info("[MemoryX] Plugin registered successfully (v2.0.0 with SDK)");
     }
 };
 
-export { MemoryXPlugin, ConversationManager };
+export { MemoryXPlugin };
