@@ -1,65 +1,65 @@
 # @t0ken.ai/memoryx-sdk
 
-MemoryX Node.js SDK - 让 AI Agents 轻松拥有持久记忆
+MemoryX Node.js SDK - Enable AI Agents with persistent memory
 
-## 安装
+## Installation
 
 ```bash
 npm install @t0ken.ai/memoryx-sdk
 ```
 
-## 快速开始
+## Quick Start
 
 ```typescript
-import { MemoryXSDK, PRESET } from '@t0ken/memoryx-sdk';
+import { MemoryXSDK, PRESET } from '@t0ken.ai/memoryx-sdk';
 
-// 使用预设模式
+// Use preset mode
 const sdk = new MemoryXSDK({ preset: 'batch' });
 
-// 添加记忆
-await sdk.addMemory("用户喜欢用Python做数据分析");
+// Add memory
+await sdk.addMemory("User prefers Python for data analysis");
 
-// 搜索记忆
-const results = await sdk.search("数据分析");
+// Search memories
+const results = await sdk.search("data analysis");
 console.log(results.data);
 ```
 
-## 发送策略
+## Send Strategies
 
-SDK 支持灵活的发送策略配置：
+SDK supports flexible send strategy configuration:
 
-### 预设模式
+### Preset Modes
 
 ```typescript
-// 实时模式 - 立即发送
+// Realtime mode - send immediately
 const sdk = new MemoryXSDK({ preset: 'realtime' });
 
-// 批量模式 - 50条或5秒
+// Batch mode - 50 items or 5 seconds
 const sdk = new MemoryXSDK({ preset: 'batch' });
 
-// 会话模式 - 2轮或30分钟
+// Conversation mode - 2 rounds or 30 minutes
 const sdk = new MemoryXSDK({ preset: 'conversation' });
 ```
 
-### 自定义策略
+### Custom Strategy
 
 ```typescript
 const sdk = new MemoryXSDK({
   strategy: {
-    rounds: 3,        // 3轮对话后发送
-    batchSize: 100,   // 或100条消息
-    intervalMs: 60000 // 或1分钟
+    rounds: 3,        // Send after 3 conversation rounds
+    batchSize: 100,   // Or 100 messages
+    intervalMs: 60000 // Or 1 minute
   }
 });
 ```
 
-### 完全自定义
+### Fully Custom
 
 ```typescript
 const sdk = new MemoryXSDK({
   strategy: {
     customTrigger: (stats) => {
-      // 自定义逻辑
+      // Custom logic
       return stats.rounds >= 2 || stats.totalTokens >= 4000;
     }
   }
@@ -68,65 +68,65 @@ const sdk = new MemoryXSDK({
 
 ## API
 
-### 记忆操作
+### Memory Operations
 
 ```typescript
-// 添加记忆
+// Add memory
 await sdk.addMemory(content, metadata?);
 
-// 搜索记忆
+// Search memories
 const results = await sdk.search(query, limit?);
 
-// 列出记忆
+// List memories
 const memories = await sdk.list(limit?, offset?);
 
-// 删除记忆
+// Delete memory
 await sdk.delete(memoryId);
 
-// 获取配额
+// Get quota
 const quota = await sdk.getQuota();
 ```
 
-### 会话操作
+### Conversation Operations
 
 ```typescript
-// 添加对话消息
-await sdk.addMessage('user', '你好');
-await sdk.addMessage('assistant', '你好！有什么可以帮助你的？');
+// Add conversation message
+await sdk.addMessage('user', 'Hello');
+await sdk.addMessage('assistant', 'Hi! How can I help you?');
 
-// 开始新会话
+// Start new conversation
 sdk.startNewConversation();
 ```
 
-### 队列操作
+### Queue Operations
 
 ```typescript
-// 手动刷新队列
+// Manual flush queue
 await sdk.flush();
 
-// 获取队列状态
+// Get queue stats
 const stats = await sdk.getQueueStats();
 ```
 
-## 策略参数
+## Strategy Parameters
 
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `rounds` | number | N轮对话后发送 |
-| `batchSize` | number | N条消息后发送 |
-| `intervalMs` | number | N毫秒后发送 |
-| `maxTokens` | number | N tokens后发送 |
-| `customTrigger` | function | 自定义触发函数 |
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `rounds` | number | Send after N conversation rounds |
+| `batchSize` | number | Send after N messages |
+| `intervalMs` | number | Send after N milliseconds |
+| `maxTokens` | number | Send after N tokens |
+| `customTrigger` | function | Custom trigger function |
 
-## 队列状态
+## Queue Stats
 
 ```typescript
 interface QueueStats {
-  messageCount: number;      // 当前消息数
-  rounds: number;            // 当前轮数
-  totalTokens: number;       // 总tokens
-  oldestMessageAge: number;  // 最早消息年龄
-  conversationId: string;    // 会话ID
+  messageCount: number;      // Current message count
+  rounds: number;            // Current rounds
+  totalTokens: number;       // Total tokens
+  oldestMessageAge: number;  // Age of oldest message
+  conversationId: string;    // Conversation ID
 }
 ```
 

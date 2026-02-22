@@ -124,12 +124,14 @@ openclaw gateway restart
 
 ## How it Works
 
+Powered by **@t0ken.ai/memoryx-sdk** with conversation preset.
+
 ### Recall (`before_agent_start`)
 
 - Builds a `/v1/memories/search` request using the current prompt
 - Injects relevant memories via `prependContext`:
   ```
-  [相关记忆]
+  [Relevant Memories]
   - [preference] User prefers dark mode
   - [fact] User's timezone is UTC+8
   [End of memories]
@@ -137,10 +139,10 @@ openclaw gateway restart
 
 ### Add (`message_received` + `assistant_response`)
 
-- Buffers messages with precise token counting (tiktoken)
+- Buffers messages with precise token counting
 - Flushes to `/v1/conversations/flush` when:
-  - 2 conversation rounds completed (user + assistant = 1 round)
-  - 30 minutes timeout
+  - 30k tokens reached
+  - 5 minutes idle timeout
 - Server extracts entities, facts, and preferences automatically
 
 ### Auto Registration

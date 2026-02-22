@@ -1,29 +1,33 @@
 # MemoryX MCP Server
 
-MemoryX MCP Server 用于 Cursor、VS Code、Claude Desktop 等 MCP 客户端。
+MemoryX MCP Server for Cursor, VS Code, Claude Desktop and other MCP clients.
 
-## 功能
+Powered by **@t0ken.ai/memoryx-sdk**
 
-- **save_memory**: 保存重要信息到记忆系统
-- **search_memory**: 搜索历史记忆
-- **get_account_info**: 获取账户信息
+## Features
 
-## 特点
+- **save_memory**: Save important information to memory system
+- **search_memory**: Search historical memories
+- **get_account_info**: Get account information
 
-- 本地 SQLite 队列存储
-- 按 conversation 分组批量发送
-- 自动重试机制
-- 离线支持
+## Characteristics
 
-## 安装
+- Based on @t0ken.ai/memoryx-sdk
+- MCP mode: LLM summarizes and sends single memory additions
+- Server extracts entities directly without LLM summarization
+- Trigger: 20k tokens or 1 minute idle
+- Automatic retry mechanism
+- Offline support
 
-### 方式一：NPM 安装
+## Installation
+
+### Option 1: NPM Install
 
 ```bash
-npm install -g @t0ken/memoryx-mcp-server
+npm install -g @t0ken.ai/memoryx-mcp-server
 ```
 
-### 方式二：从源码安装
+### Option 2: Install from Source
 
 ```bash
 cd plugins/memoryx-mcp-server
@@ -32,11 +36,11 @@ npm run build
 npm link
 ```
 
-## 配置
+## Configuration
 
 ### Cursor / VS Code
 
-在 `~/.cursor/mcp.json` 或 VS Code 的 MCP 配置中添加：
+Add to `~/.cursor/mcp.json` or VS Code MCP config:
 
 ```json
 {
@@ -54,7 +58,7 @@ npm link
 
 ### Claude Desktop
 
-在 Claude Desktop 配置文件中添加：
+Add to Claude Desktop config file:
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -72,48 +76,30 @@ npm link
 }
 ```
 
-## 使用
+## Usage
 
-### 自动注册
+### Auto Registration
 
-如果没有提供 API Key，MCP Server 会自动注册并生成一个。
+If no API Key is provided, MCP Server will auto-register and generate one.
 
-### 手动绑定
+### Manual Binding
 
-1. 访问 https://t0ken.ai/portal
-2. 登录后复制 API Key
-3. 配置到环境变量 `MEMORYX_API_KEY`
+1. Visit https://t0ken.ai/portal
+2. Login and copy API Key
+3. Configure environment variable `MEMORYX_API_KEY`
 
-## 本地存储
+## Local Storage
 
-数据存储在 `~/.memoryx/mcp-server/` 目录：
+Data is stored in `~/.memoryx/mcp-server/` directory.
 
-- `memoryx.db` - SQLite 数据库（消息队列）
-- `mcp-server.log` - 日志文件
+## MCP Mode vs OpenClaw Conversation Mode
 
-## 架构
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    MCP Server 架构                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  save_memory ──→ SQLite 本地队列 ──→ 定时批量发送 ──→ API   │
-│                                                             │
-│  ┌─────────────┐    ┌──────────────┐    ┌───────────────┐  │
-│  │ MCP Tools   │───→│ send_queue   │───→│ /conversations│  │
-│  │             │    │ 表           │    │ /flush        │  │
-│  └─────────────┘    └──────────────┘    └───────────────┘  │
-│                                                             │
-│  特点：                                                     │
-│  • 每条消息先存本地 SQLite                                   │
-│  • 按 conversation_id 分组                                  │
-│  • 2 轮对话后触发发送                                        │
-│  • 定时器每 5 秒检查队列                                     │
-│  • 失败重试最多 5 次                                        │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+| Feature | MCP Server | OpenClaw Plugin |
+|---------|------------|-----------------|
+| Data Source | LLM summarized single additions | Bidirectional conversation flow |
+| Server Processing | Direct entity extraction | LLM summarization then extraction |
+| Trigger Mechanism | 20k tokens / 1 min idle | 30k tokens / 5 min idle |
+| Use Case | Cursor/Claude Desktop | OpenClaw Gateway |
 
 ## License
 

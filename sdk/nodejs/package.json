@@ -1,7 +1,7 @@
 {
   "name": "@t0ken.ai/memoryx-sdk",
-  "version": "1.0.0",
-  "description": "MemoryX Node.js SDK - 让 AI Agents 轻松拥有持久记忆",
+  "version": "1.0.1",
+  "description": "MemoryX Node.js SDK - Enable AI Agents with persistent memory",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
