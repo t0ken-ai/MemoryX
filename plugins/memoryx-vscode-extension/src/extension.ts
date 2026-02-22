@@ -17,11 +17,10 @@ async function getSDK(): Promise<MemoryXSDK> {
     const apiUrl = config.get<string>('apiUrl') || 'https://t0ken.ai/api';
     const apiKey = config.get<string>('apiKey') || '';
     
+    // Use conversation preset - bidirectional conversation flow
+    // Trigger: 30k tokens / 5 minutes idle
     sdk = new MemoryXSDK({
-        strategy: {
-            maxTokens: 20000,
-            intervalMs: 60000  // 1 minute idle
-        },
+        preset: 'conversation',
         apiKey: apiKey || undefined,
         apiUrl: apiUrl,
         autoRegister: !apiKey,
@@ -123,14 +122,19 @@ async function handler(
         // Default behavior: auto capture + auto recall
         stream.progress('Processing...');
         
-        // 1. Auto capture conversation
+        // 1. Auto capture conversation using bidirectional flow (addMessage)
         if (autoCapture && history.length > 0) {
-            const historyContent = extractHistoryContent(history);
-            if (historyContent.trim()) {
-                await sdkInstance.addMemory(historyContent, {
-                    source: 'vscode-chat',
-                    timestamp: new Date().toISOString()
-                });
+            for (const turn of history) {
+                if (turn instanceof vscode.ChatRequestTurn) {
+                    // User message
+                    await sdkInstance.addMessage('user', turn.prompt);
+                } else if (turn instanceof vscode.ChatResponseTurn) {
+                    // Assistant message
+                    const response = (turn as any).response || (turn as any).markdownContent || '';
+                    if (response) {
+                        await sdkInstance.addMessage('assistant', response);
+                    }
+                }
             }
         }
         
@@ -215,17 +219,22 @@ async function handleList(sdk: MemoryXSDK, stream: vscode.ChatResponseStream): P
 async function handleRemember(sdk: MemoryXSDK, history: readonly (vscode.ChatRequestTurn | vscode.ChatResponseTurn)[], stream: vscode.ChatResponseStream): Promise<void> {
     stream.progress('Saving conversation to memory...');
     
-    const historyContent = extractHistoryContent(history);
-    
-    if (!historyContent.trim()) {
+    if (history.length === 0) {
         stream.markdown('❌ No conversation to save.\n');
         return;
     }
     
-    await sdk.addMemory(historyContent, {
-        source: 'vscode-chat-manual',
-        timestamp: new Date().toISOString()
-    });
+    // Use bidirectional conversation flow
+    for (const turn of history) {
+        if (turn instanceof vscode.ChatRequestTurn) {
+            await sdk.addMessage('user', turn.prompt);
+        } else if (turn instanceof vscode.ChatResponseTurn) {
+            const response = (turn as any).response || (turn as any).markdownContent || '';
+            if (response) {
+                await sdk.addMessage('assistant', response);
+            }
+        }
+    }
     
     const stats = await sdk.getQueueStats();
     stream.markdown(`✅ **Conversation saved!** (${stats.messageCount} messages in queue)\n`);
