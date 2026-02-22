@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隐私政策 - MemoryX</title>
-    <meta name="description" content="MemoryX 隐私政策">
+    <title>Privacy Policy - MemoryX</title>
+    <meta name="description" content="MemoryX Privacy Policy">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/i18n.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -30,7 +31,7 @@
                     <span class="text-xl font-bold text-white">MemoryX</span>
                 </a>
                 
-                <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">← 返回首页</a>
+                <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors" data-i18n="privacy.backHome">← Back to Home</a>
             </div>
         </div>
     </header>
@@ -39,104 +40,104 @@
     <main class="pt-24 pb-16 px-6">
         <div class="max-w-3xl mx-auto">
             <div class="mb-12">
-                <h1 class="text-4xl font-bold mb-4"><span class="gradient-text">隐私政策</span></h1>
-                <p class="text-gray-400">最后更新日期：2026年2月13日</p>
+                <h1 class="text-4xl font-bold mb-4"><span class="gradient-text" data-i18n="privacy.title">Privacy Policy</span></h1>
+                <p class="text-gray-400" data-i18n="privacy.lastUpdate">Last updated: February 13, 2026</p>
             </div>
 
             <div class="prose prose-invert prose-gray max-w-none">
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">1. 我们收集的信息</h2>
-                    <p class="text-gray-300 mb-4">我们收集以下类型的信息：</p>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section1Title">1. Information We Collect</h2>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section1Desc">We collect the following types of information:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li><strong class="text-white">账户信息</strong>：邮箱地址、用户ID</li>
-                        <li><strong class="text-white">记忆内容</strong>：您存储在 MemoryX 中的文本内容</li>
-                        <li><strong class="text-white">使用数据</strong>：API 调用次数、访问时间</li>
-                        <li><strong class="text-white">技术信息</strong>：IP 地址、浏览器类型（用于安全防护）</li>
+                        <li><strong class="text-white" data-i18n="privacy.collect1Label">Account Information</strong><span data-i18n="privacy.collect1">: Email address, user ID</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.collect2Label">Memory Content</strong><span data-i18n="privacy.collect2">: Text content you store in MemoryX</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.collect3Label">Usage Data</strong><span data-i18n="privacy.collect3">: API calls, access times</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.collect4Label">Technical Information</strong><span data-i18n="privacy.collect4">: IP address, browser type (for security)</span></li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">2. 我们如何使用您的信息</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section2Title">2. How We Use Your Information</h2>
                     
-                    <p class="text-gray-300 mb-4">我们使用收集的信息来：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section2Desc">We use the collected information to:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>提供记忆存储和检索服务</li>
-                        <li>改进我们的 AI 分类算法</li>
-                        <li>发送服务通知（如安全警告）</li>
-                        <li>防止滥用和确保安全</li>
+                        <li data-i18n="privacy.use1">Provide memory storage and retrieval services</li>
+                        <li data-i18n="privacy.use2">Improve our AI classification algorithms</li>
+                        <li data-i18n="privacy.use3">Send service notifications (e.g., security alerts)</li>
+                        <li data-i18n="privacy.use4">Prevent abuse and ensure security</li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">3. 数据存储与安全</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section3Title">3. Data Storage & Security</h2>
                     
-                    <p class="text-gray-300 mb-4">我们采取行业标准的措施保护您的数据：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section3Desc">We take industry-standard measures to protect your data:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>所有数据传输使用 TLS 加密</li>
-                        <li>敏感信息（如 API Key）加密存储</li>
-                        <li>定期安全审计和漏洞扫描</li>
-                        <li>服务器位于安全的云数据中心</li>
+                        <li data-i18n="privacy.security1">All data transmission uses TLS encryption</li>
+                        <li data-i18n="privacy.security2">Sensitive information (e.g., API Keys) is encrypted at rest</li>
+                        <li data-i18n="privacy.security3">Regular security audits and vulnerability scans</li>
+                        <li data-i18n="privacy.security4">Servers located in secure cloud data centers</li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">4. 数据分享</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section4Title">4. Data Sharing</h2>
                     
-                    <p class="text-gray-300 mb-4">我们不会出售您的数据。仅在以下情况分享：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section4Desc">We do not sell your data. We only share in these cases:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li><strong class="text-white">法律要求</strong>：响应合法的政府请求</li>
-                        <li><strong class="text-white">服务提供商</strong>：如云存储、邮件服务商（仅用于提供服务）</li>
-                        <li><strong class="text-white">合并/收购</strong>：如公司被收购，数据将转移给新所有者</li>
+                        <li><strong class="text-white" data-i18n="privacy.share1Label">Legal Requirements</strong><span data-i18n="privacy.share1">: Responding to legitimate government requests</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.share2Label">Service Providers</strong><span data-i18n="privacy.share2">: Cloud storage, email providers (only for service delivery)</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.share3Label">Merger/Acquisition</strong><span data-i18n="privacy.share3">: If the company is acquired, data will transfer to new owner</span></li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">5. 您的权利</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section5Title">5. Your Rights</h2>
                     
-                    <p class="text-gray-300 mb-4">您对您的数据拥有以下权利：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section5Desc">You have the following rights over your data:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li><strong class="text-white">访问</strong>：查看您存储的所有数据</li>
-                        <li><strong class="text-white">删除</strong>：删除账户和所有相关数据</li>
-                        <li><strong class="text-white">导出</strong>：导出您的记忆数据</li>
-                        <li><strong class="text-white">更正</strong>：更新不准确的信息</li>
+                        <li><strong class="text-white" data-i18n="privacy.right1Label">Access</strong><span data-i18n="privacy.right1">: View all your stored data</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.right2Label">Delete</strong><span data-i18n="privacy.right2">: Delete your account and all related data</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.right3Label">Export</strong><span data-i18n="privacy.right3">: Export your memory data</span></li>
+                        <li><strong class="text-white" data-i18n="privacy.right4Label">Correct</strong><span data-i18n="privacy.right4">: Update inaccurate information</span></li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">6. Cookie 政策</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section6Title">6. Cookie Policy</h2>
                     
-                    <p class="text-gray-300 mb-4">我们使用 Cookie 来：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section6Desc">We use cookies to:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>保持您的登录状态</li>
-                        <li>记住您的偏好设置</li>
-                        <li>分析网站使用情况（匿名）</li>
+                        <li data-i18n="privacy.cookie1">Keep you logged in</li>
+                        <li data-i18n="privacy.cookie2">Remember your preferences</li>
+                        <li data-i18n="privacy.cookie3">Analyze website usage (anonymously)</li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">7. 儿童隐私</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section7Title">7. Children's Privacy</h2>
                     
-                    <p class="text-gray-300">MemoryX 不面向13岁以下儿童。我们不会故意收集儿童个人信息。如发现儿童信息，请立即联系我们删除。</p>
+                    <p class="text-gray-300" data-i18n="privacy.section7Desc">MemoryX is not intended for children under 13. We do not knowingly collect children's personal information. If you discover any child information, please contact us immediately for removal.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">8. 政策更新</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section8Title">8. Policy Updates</h2>
                     
-                    <p class="text-gray-300">我们可能会更新此隐私政策。重大变更将通过邮件或网站通知。继续使用服务即表示接受新政策。</p>
+                    <p class="text-gray-300" data-i18n="privacy.section8Desc">We may update this privacy policy. Major changes will be notified via email or website. Continued use of the service indicates acceptance of the new policy.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">9. 联系我们</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="privacy.section9Title">9. Contact Us</h2>
                     
-                    <p class="text-gray-300 mb-4">如有隐私相关问题，请联系我们：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="privacy.section9Desc">If you have privacy-related questions, please contact us:</p>
                     
-                    <p class="text-gray-300">📧 邮箱：<a href="mailto:business@t0ken.ai" class="text-purple-400 hover:text-purple-300">business@t0ken.ai</a></p>
+                    <p class="text-gray-300">📧 <span data-i18n="privacy.email">Email</span>: <a href="mailto:business@t0ken.ai" class="text-purple-400 hover:text-purple-300">business@t0ken.ai</a></p>
                 </div>
             </div>
         </div>
@@ -145,10 +146,17 @@
     <!-- Footer -->
     <footer class="border-t border-white/10 py-8 px-6">
         <div class="max-w-7xl mx-auto text-center">
-            <p class="text-gray-500 text-sm">© 2026 MemoryX. 保留所有权利。</p>
+            <p class="text-gray-500 text-sm" data-i18n="footer.copyright">© 2026 MemoryX. All rights reserved.</p>
         </div>
     </footer>
     
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            const lang = getCurrentLanguage();
+            document.title = lang === 'zh' ? '隐私政策 - MemoryX' : 'Privacy Policy - MemoryX';
+        });
+    </script>
 </body>
 </html>

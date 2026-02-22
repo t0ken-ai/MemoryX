@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>使用条款 - MemoryX</title>
-    <meta name="description" content="MemoryX 使用条款">
+    <title>Terms of Service - MemoryX</title>
+    <meta name="description" content="MemoryX Terms of Service">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/i18n.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -30,7 +31,7 @@
                     <span class="text-xl font-bold text-white">MemoryX</span>
                 </a>
                 
-                <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors">← 返回首页</a>
+                <a href="/" class="text-sm text-gray-400 hover:text-white transition-colors" data-i18n="terms.backHome">← Back to Home</a>
             </div>
         </div>
     </header>
@@ -39,153 +40,153 @@
     <main class="pt-24 pb-16 px-6">
         <div class="max-w-3xl mx-auto">
             <div class="mb-12">
-                <h1 class="text-4xl font-bold mb-4"><span class="gradient-text">使用条款</span></h1>
-                <p class="text-gray-400">最后更新日期：2026年2月13日</p>
+                <h1 class="text-4xl font-bold mb-4"><span class="gradient-text" data-i18n="terms.title">Terms of Service</span></h1>
+                <p class="text-gray-400" data-i18n="terms.lastUpdate">Last updated: February 13, 2026</p>
             </div>
 
             <div class="prose prose-invert prose-gray max-w-none">
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">1. 接受条款</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section1Title">1. Acceptance of Terms</h2>
                     
-                    <p class="text-gray-300 mb-4">欢迎使用 MemoryX！通过访问或使用我们的服务，您同意受这些使用条款的约束。如果您不同意这些条款，请勿使用我们的服务。</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section1Desc1">Welcome to MemoryX! By accessing or using our services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
                     
-                    <p class="text-gray-300">我们保留随时修改这些条款的权利。重大变更将通过邮件或网站通知。继续使用服务即表示接受新条款。</p>
+                    <p class="text-gray-300" data-i18n="terms.section1Desc2">We reserve the right to modify these terms at any time. Major changes will be notified via email or website. Continued use of the service indicates acceptance of the new terms.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">2. 服务描述</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section2Title">2. Service Description</h2>
                     
-                    <p class="text-gray-300 mb-4">MemoryX 提供以下服务：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section2Desc">MemoryX provides the following services:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>AI 记忆存储与检索</li>
-                        <li>认知分类与向量搜索</li>
-                        <li>API 访问与集成</li>
-                        <li>相关技术支持和文档</li>
+                        <li data-i18n="terms.service1">AI memory storage and retrieval</li>
+                        <li data-i18n="terms.service2">Cognitive classification and vector search</li>
+                        <li data-i18n="terms.service3">API access and integration</li>
+                        <li data-i18n="terms.service4">Related technical support and documentation</li>
                     </ul>
                     
-                    <p class="text-gray-300 mt-4">我们保留修改、暂停或终止服务的权利，恕不另行通知。</p>
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section2Note">We reserve the right to modify, suspend, or terminate services without notice.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">3. 账户注册</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section3Title">3. Account Registration</h2>
                     
-                    <p class="text-gray-300 mb-4">使用 MemoryX 需要创建账户。您同意：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section3Desc">Using MemoryX requires creating an account. You agree to:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>提供准确、完整的注册信息</li>
-                        <li>保护您的账户密码和 API Key 安全</li>
-                        <li>及时更新账户信息</li>
-                        <li>对账户下的所有活动负责</li>
+                        <li data-i18n="terms.account1">Provide accurate and complete registration information</li>
+                        <li data-i18n="terms.account2">Protect your account password and API Key security</li>
+                        <li data-i18n="terms.account3">Update account information in a timely manner</li>
+                        <li data-i18n="terms.account4">Be responsible for all activities under your account</li>
                     </ul>
                     
-                    <p class="text-gray-300 mt-4">如发现未经授权使用您的账户，请立即联系我们。</p>
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section3Note">If you discover unauthorized use of your account, please contact us immediately.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">4. 使用规则</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section4Title">4. Usage Rules</h2>
                     
-                    <p class="text-gray-300 mb-4">您同意不使用 MemoryX 进行以下活动：</p>
-                    
-                    <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>存储或传播非法、有害、威胁、辱骂、骚扰、诽谤、淫秽内容</li>
-                        <li>侵犯他人知识产权或隐私权</li>
-                        <li>传播恶意软件、病毒或任何有害代码</li>
-                        <li>未经授权访问或干扰服务、服务器或网络</li>
-                        <li>超出合理使用的 API 调用（如 DDoS 攻击）</li>
-                        <li>转售、再许可或商业性分发的服务</li>
-                        <li>自动化注册批量账户</li>
-                    </ul>
-                </div>
-
-                <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">5. 知识产权</h2>
-                    
-                    <p class="text-gray-300 mb-4">MemoryX 及相关代码、文档、商标的知识产权归我们所有。MIT 许可证授权的范围除外。</p>
-                    
-                    <p class="text-gray-300 mb-4">关于您的内容：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section4Desc">You agree not to use MemoryX for the following activities:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>您保留存储内容的知识产权</li>
-                        <li>您授予我们必要的许可，以提供服务（存储、处理、显示）</li>
-                        <li>您声明拥有内容的合法权利或已获得必要授权</li>
+                        <li data-i18n="terms.rule1">Storing or distributing illegal, harmful, threatening, abusive, harassing, defamatory, or obscene content</li>
+                        <li data-i18n="terms.rule2">Infringing on others' intellectual property or privacy rights</li>
+                        <li data-i18n="terms.rule3">Distributing malware, viruses, or any harmful code</li>
+                        <li data-i18n="terms.rule4">Unauthorized access or interference with services, servers, or networks</li>
+                        <li data-i18n="terms.rule5">Excessive API calls beyond reasonable use (e.g., DDoS attacks)</li>
+                        <li data-i18n="terms.rule6">Reselling, sublicensing, or commercial distribution of services</li>
+                        <li data-i18n="terms.rule7">Automated registration of bulk accounts</li>
                     </ul>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">6. 服务等级与可用性</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section5Title">5. Intellectual Property</h2>
                     
-                    <p class="text-gray-300 mb-4">我们努力保持服务高可用性，但不保证：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section5Desc1">The intellectual property of MemoryX and related code, documentation, and trademarks belongs to us. Except for the scope authorized by the MIT license.</p>
+                    
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section5Desc2">Regarding your content:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>服务不会中断、及时、安全或无错误</li>
-                        <li>任何内容或数据的准确性或可靠性</li>
-                        <li>服务满足您的特定需求</li>
+                        <li data-i18n="terms.ip1">You retain the intellectual property of stored content</li>
+                        <li data-i18n="terms.ip2">You grant us necessary licenses to provide services (storage, processing, display)</li>
+                        <li data-i18n="terms.ip3">You represent that you have legal rights to the content or have obtained necessary authorizations</li>
                     </ul>
-                    
-                    <p class="text-gray-300 mt-4">免费版服务按"原样"提供，不提供服务级别协议（SLA）。</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">7. 责任限制</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section6Title">6. Service Level & Availability</h2>
                     
-                    <p class="text-gray-300 mb-4">在法律允许的最大范围内，MemoryX 及其贡献者不对以下情况负责：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section6Desc">We strive to maintain high service availability, but do not guarantee:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>任何直接、间接、附带、特殊或后果性损害</li>
-                        <li>数据丢失或损坏</li>
-                        <li>利润、收入或业务机会损失</li>
-                        <li>服务中断或不可用</li>
+                        <li data-i18n="terms.sla1">Services will not be interrupted, timely, secure, or error-free</li>
+                        <li data-i18n="terms.sla2">Accuracy or reliability of any content or data</li>
+                        <li data-i18n="terms.sla3">Services will meet your specific needs</li>
                     </ul>
                     
-                    <p class="text-gray-300 mt-4">我们的总责任不超过您在过去12个月内支付的费用，或100美元（以较高者为准）。</p>
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section6Note">Free tier services are provided "as is" without Service Level Agreement (SLA).</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">8. 终止</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section7Title">7. Limitation of Liability</h2>
                     
-                    <p class="text-gray-300 mb-4">您可以随时停止使用服务并删除账户。</p>
-                    
-                    <p class="text-gray-300 mb-4">我们保留在以下情况下终止或暂停您访问服务的权利：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section7Desc">To the maximum extent permitted by law, MemoryX and its contributors are not responsible for:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>违反这些使用条款</li>
-                        <li>从事非法活动</li>
-                        <li>滥用服务或影响其他用户</li>
-                        <li>长期不活跃（超过2年）</li>
+                        <li data-i18n="terms.liability1">Any direct, indirect, incidental, special, or consequential damages</li>
+                        <li data-i18n="terms.liability2">Data loss or corruption</li>
+                        <li data-i18n="terms.liability3">Loss of profits, revenue, or business opportunities</li>
+                        <li data-i18n="terms.liability4">Service interruption or unavailability</li>
                     </ul>
                     
-                    <p class="text-gray-300 mt-4">终止后，您的数据将根据隐私政策的保留条款处理。</p>
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section7Note">Our total liability does not exceed the fees you paid in the past 12 months, or $100 (whichever is higher).</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">9. 适用法律</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section8Title">8. Termination</h2>
                     
-                    <p class="text-gray-300">这些条款受中华人民共和国法律管辖。任何争议应首先通过友好协商解决。协商不成的，提交我们所在地有管辖权的法院诉讼解决。</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section8Desc1">You may stop using the service and delete your account at any time.</p>
+                    
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section8Desc2">We reserve the right to terminate or suspend your access to the service in the following cases:</p>
+                    
+                    <ul class="list-disc list-inside text-gray-300 space-y-2">
+                        <li data-i18n="terms.terminate1">Violation of these Terms of Service</li>
+                        <li data-i18n="terms.terminate2">Engaging in illegal activities</li>
+                        <li data-i18n="terms.terminate3">Abuse of service or affecting other users</li>
+                        <li data-i18n="terms.terminate4">Long-term inactivity (over 2 years)</li>
+                    </ul>
+                    
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section8Note">After termination, your data will be handled according to the privacy policy retention terms.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">10. 开源许可</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section9Title">9. Governing Law</h2>
                     
-                    <p class="text-gray-300 mb-4">MemoryX 采用 MIT 开源许可证。您可以自由地：</p>
+                    <p class="text-gray-300" data-i18n="terms.section9Desc">These terms are governed by the laws of the People's Republic of China. Any disputes should first be resolved through friendly negotiation. If negotiation fails, submit to the court with jurisdiction over our location.</p>
+                </div>
+
+                <div class="bg-white/5 rounded-2xl p-8 mb-8 border border-white/10">
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section10Title">10. Open Source License</h2>
+                    
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section10Desc">MemoryX uses the MIT open source license. You are free to:</p>
                     
                     <ul class="list-disc list-inside text-gray-300 space-y-2">
-                        <li>用于商业或非商业用途</li>
-                        <li>修改和分发代码</li>
-                        <li>私有使用</li>
+                        <li data-i18n="terms.license1">Use for commercial or non-commercial purposes</li>
+                        <li data-i18n="terms.license2">Modify and distribute code</li>
+                        <li data-i18n="terms.license3">Private use</li>
                     </ul>
                     
-                    <p class="text-gray-300 mt-4">但需保留版权声明和许可声明。详见 <a href="https://github.com/CensorKo/MemoryX/blob/main/LICENSE" class="text-purple-400 hover:text-purple-300">LICENSE</a> 文件。</p>
+                    <p class="text-gray-300 mt-4" data-i18n="terms.section10Note">But must retain copyright and license notices. See <a href="https://github.com/t0ken-ai/MemoryX/blob/main/LICENSE" class="text-purple-400 hover:text-purple-300">LICENSE</a> file for details.</p>
                 </div>
 
                 <div class="bg-white/5 rounded-2xl p-8 border border-white/10">
-                    <h2 class="text-xl font-semibold text-white mb-4">11. 联系我们</h2>
+                    <h2 class="text-xl font-semibold text-white mb-4" data-i18n="terms.section11Title">11. Contact Us</h2>
                     
-                    <p class="text-gray-300 mb-4">如有任何问题或疑虑，请联系我们：</p>
+                    <p class="text-gray-300 mb-4" data-i18n="terms.section11Desc">If you have any questions or concerns, please contact us:</p>
                     
-                    <p class="text-gray-300">📧 邮箱：<a href="mailto:business@t0ken.ai" class="text-purple-400 hover:text-purple-300">business@t0ken.ai</a></p>
+                    <p class="text-gray-300">📧 <span data-i18n="terms.email">Email</span>: <a href="mailto:business@t0ken.ai" class="text-purple-400 hover:text-purple-300">business@t0ken.ai</a></p>
                     
-                    <p class="text-gray-300 mt-2">🐙 GitHub：<a href="https://github.com/CensorKo/MemoryX" class="text-purple-400 hover:text-purple-300">github.com/CensorKo/MemoryX</a></p>
+                    <p class="text-gray-300 mt-2">🐙 GitHub: <a href="https://github.com/t0ken-ai/MemoryX" class="text-purple-400 hover:text-purple-300">github.com/t0ken-ai/MemoryX</a></p>
                 </div>
             </div>
         </div>
@@ -194,10 +195,17 @@
     <!-- Footer -->
     <footer class="border-t border-white/10 py-8 px-6">
         <div class="max-w-7xl mx-auto text-center">
-            <p class="text-gray-500 text-sm">© 2026 MemoryX. 保留所有权利。</p>
+            <p class="text-gray-500 text-sm" data-i18n="footer.copyright">© 2026 MemoryX. All rights reserved.</p>
         </div>
     </footer>
     
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            const lang = getCurrentLanguage();
+            document.title = lang === 'zh' ? '使用条款 - MemoryX' : 'Terms of Service - MemoryX';
+        });
+    </script>
 </body>
 </html>
