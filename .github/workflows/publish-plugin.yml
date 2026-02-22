@@ -40,13 +40,29 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@t0ken.ai'
       
-      - name: Install dependencies
+      - name: Install SDK dependencies and build
+        working-directory: sdk/nodejs
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Install plugin dependencies
         working-directory: plugins/memoryx-openclaw-plugin
-        run: npm ci
+        run: |
+          # Install with local SDK first for types
+          npm install ../../sdk/nodejs
+          npm install
       
       - name: Build
         working-directory: plugins/memoryx-openclaw-plugin
         run: npm run build
+      
+      - name: Restore package.json for publishing
+        working-directory: plugins/memoryx-openclaw-plugin
+        run: |
+          # Remove local SDK reference, use npm registry version
+          npm uninstall @t0ken.ai/memoryx-sdk
+          npm install @t0ken.ai/memoryx-sdk@latest
       
       - name: Check package version
         id: check
