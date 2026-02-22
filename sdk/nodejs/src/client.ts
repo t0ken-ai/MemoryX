@@ -278,6 +278,27 @@ export class APIClient {
     return { success: true };
   }
   
+  async getTaskStatus(taskId: string): Promise<{ task_id: string; status: string; result?: any; error?: string }> {
+    if (!this.apiKey) {
+      throw new Error("Not authenticated. Call autoRegister() first.");
+    }
+    
+    const response = await fetch(`${this.apiBaseUrl}/v1/memories/task/${taskId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": this.apiKey
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData: any = await response.json().catch(() => ({}));
+      throw new Error(`Get task status failed: ${response.status} ${JSON.stringify(errorData)}`);
+    }
+    
+    return response.json() as Promise<{ task_id: string; status: string; result?: any; error?: string }>;
+  }
+  
   async getQuota(): Promise<Record<string, any>> {
     if (!this.apiKey) {
       throw new Error("Not authenticated. Call autoRegister() first.");
