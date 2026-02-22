@@ -146,7 +146,7 @@ export class APIClient {
       return { success: true };
     }
     
-    const response = await fetch(`${this.apiBaseUrl}/conversations/flush`, {
+    const response = await fetch(`${this.apiBaseUrl}/v1/conversations/flush`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

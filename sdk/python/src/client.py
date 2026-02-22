@@ -247,7 +247,7 @@ class APIClient:
             "messages": formatted_messages
         }
         
-        result = self._request("POST", "/conversations/flush", data)
+        result = self._request("POST", "/v1/conversations/flush", data)
         
         return {
             "success": True,

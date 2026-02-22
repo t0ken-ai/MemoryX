@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemoryX - 免费认知记忆引擎</title>
-    <meta name="description" content="MemoryX - 免费、开源的认知记忆引擎，为 AI Agent提供持久化记忆能力。AI Agents 自动注册，即刻拥有记忆。">
-    <meta name="version" content="2026-02-20">
+    <title>MemoryX - Free Cognitive Memory Engine</title>
+    <meta name="description" content="MemoryX - Free, open-source cognitive memory engine for AI Agents. Auto-register and get instant memory capabilities.">
+    <meta name="version" content="2026-02-22">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- i18n -->
+    <script src="/js/i18n.js"></script>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -268,7 +271,7 @@
     <canvas id="particles-canvas"></canvas>
     
     <!-- Copy Toast -->
-    <div class="copy-toast" id="copyToast">已复制到剪贴板</div>
+    <div class="copy-toast" id="copyToast" data-i18n="copyToast">Copied to clipboard</div>
     
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="navbar">
@@ -283,20 +286,20 @@
                     
                     <!-- Desktop Nav -->
                     <div class="hidden md:flex items-center gap-8">
-                        <a href="#features" class="text-gray-400 hover:text-white transition-colors text-sm font-medium">功能</a>
-                        <a href="/agent-register" class="text-gray-400 hover:text-white transition-colors text-sm font-medium">Agent 安装</a>
-                        <a href="/sdk-guide" class="text-gray-400 hover:text-white transition-colors text-sm font-medium">SDK 接入</a>
-                        <a href="https://docs.t0ken.ai/" class="text-gray-400 hover:text-white transition-colors text-sm font-medium">API 文档</a>
-                        <a href="#pricing" class="text-gray-400 hover:text-white transition-colors text-sm font-medium">定价</a>
+                        <a href="#features" class="text-gray-400 hover:text-white transition-colors text-sm font-medium" data-i18n="nav.features">Features</a>
+                        <a href="/agent-register" class="text-gray-400 hover:text-white transition-colors text-sm font-medium" data-i18n="nav.agentInstall">Agent Install</a>
+                        <a href="/sdk-guide" class="text-gray-400 hover:text-white transition-colors text-sm font-medium" data-i18n="nav.sdkGuide">SDK Guide</a>
+                        <a href="https://docs.t0ken.ai/" class="text-gray-400 hover:text-white transition-colors text-sm font-medium" data-i18n="nav.apiDocs">API Docs</a>
+                        <a href="#pricing" class="text-gray-400 hover:text-white transition-colors text-sm font-medium" data-i18n="nav.pricing">Pricing</a>
                     </div>
                     
                     <!-- Auth Buttons -->
                     <div class="flex items-center gap-3">
-                        <a href="/portal/index.html#login" class="hidden sm:block text-gray-400 hover:text-white transition-colors text-sm font-medium px-3 py-2">
-                            登录
+                        <a href="/portal/index.html#login" class="hidden sm:block text-gray-400 hover:text-white transition-colors text-sm font-medium px-3 py-2" data-i18n="nav.login">
+                            Login
                         </a>
-                        <a href="/portal/index.html#register" class="btn-shine bg-white text-dark-900 px-4 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors">
-                            免费注册
+                        <a href="/portal/index.html#register" class="btn-shine bg-white text-dark-900 px-4 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition-colors" data-i18n="nav.register">
+                            Sign Up Free
                         </a>
                         
                         <!-- Mobile Menu Button -->
@@ -311,14 +314,14 @@
         <!-- Mobile Menu -->
         <div class="md:hidden hidden glass border-t border-white/10" id="mobileMenu">
             <div class="px-6 py-4 space-y-3">
-                <a href="#features" class="block text-gray-400 hover:text-white transition-colors text-sm">功能</a>
-                <a href="/agent-register" class="block text-gray-400 hover:text-white transition-colors text-sm">Agent 安装</a>
-                <a href="/sdk-guide" class="block text-gray-400 hover:text-white transition-colors text-sm">SDK 接入</a>
-                <a href="https://docs.t0ken.ai/" class="block text-gray-400 hover:text-white transition-colors text-sm">API 文档</a>
-                <a href="#pricing" class="block text-gray-400 hover:text-white transition-colors text-sm">定价</a>
+                <a href="#features" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.features">Features</a>
+                <a href="/agent-register" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.agentInstall">Agent Install</a>
+                <a href="/sdk-guide" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.sdkGuide">SDK Guide</a>
+                <a href="https://docs.t0ken.ai/" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.apiDocs">API Docs</a>
+                <a href="#pricing" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.pricing">Pricing</a>
                 <hr class="border-white/10">
-                <a href="/portal/index.html#login" class="block text-gray-400 hover:text-white transition-colors text-sm">登录</a>
-                <a href="/portal/index.html#register" class="block text-brand-purple hover:text-brand-pink transition-colors text-sm font-medium">免费注册</a>
+                <a href="/portal/index.html#login" class="block text-gray-400 hover:text-white transition-colors text-sm" data-i18n="nav.login">Login</a>
+                <a href="/portal/index.html#register" class="block text-brand-purple hover:text-brand-pink transition-colors text-sm font-medium" data-i18n="nav.register">Sign Up Free</a>
             </div>
         </div>
     </nav>
@@ -329,48 +332,47 @@
             <!-- Badge -->
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in">
                 <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span class="text-sm text-gray-300">v1.0 现已发布 — AI Agents 自动注册</span>
+                <span class="text-sm text-gray-300" data-i18n="hero.badge">v1.0 Released — AI Agents Auto-Register</span>
             </div>
             
             <!-- Main Heading -->
             <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-                <span class="block text-white mb-2">为你的 AI Agent</span>
-                <span class="gradient-text">注入持久记忆</span>
+                <span class="block text-white mb-2" data-i18n="hero.title1">Give Your AI Agent</span>
+                <span class="gradient-text" data-i18n="hero.title2">Persistent Memory</span>
             </h1>
             
             <!-- Subtitle -->
-            <p class="text-xl sm:text-2xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                MemoryX 是免费的认知记忆引擎，<br class="hidden sm:block">
-                让 AI 真正记住每一次对话，持续学习成长
+            <p class="text-xl sm:text-2xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed" data-i18n="hero.subtitle">
+                MemoryX is a free cognitive memory engine that enables AI to truly remember every conversation and continuously learn and grow
             </p>
             
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
                 <a href="/portal/index.html#register" class="btn-shine group relative px-8 py-4 rounded-full bg-gradient-to-r from-brand-purple to-brand-pink font-semibold text-lg hover:shadow-lg hover:shadow-brand-purple/30 transition-all duration-300 glow-purple">
                     <span class="flex items-center gap-2">
-                        免费注册使用
+                        <span data-i18n="hero.cta1">Get Started Free</span>
                         <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                     </span>
                 </a>
                 <a href="#quick-start" class="px-8 py-4 rounded-full border border-white/20 font-medium text-lg hover:bg-white/5 transition-all duration-300 flex items-center gap-2">
                     <i data-lucide="bot" class="w-5 h-5"></i>
-                    AI Agent 接入
+                    <span data-i18n="hero.cta2">AI Agent Integration</span>
                 </a>
             </div>
             
             <!-- Stats -->
             <div class="grid grid-cols-3 gap-8 max-w-lg mx-auto stagger-children" id="heroStats">
                 <div class="text-center">
-                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan">100%</div>
-                    <div class="text-sm text-gray-500 mt-1">开源可审计</div>
+                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan" data-i18n="hero.stat1">100%</div>
+                    <div class="text-sm text-gray-500 mt-1" data-i18n="hero.stat1Label">Open Source</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan">AES+</div>
-                    <div class="text-sm text-gray-500 mt-1">加密存储</div>
+                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan" data-i18n="hero.stat2">AES+</div>
+                    <div class="text-sm text-gray-500 mt-1" data-i18n="hero.stat2Label">Encrypted Storage</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan">MCP</div>
-                    <div class="text-sm text-gray-500 mt-1">协议支持</div>
+                    <div class="text-3xl sm:text-4xl font-bold gradient-text-cyan" data-i18n="hero.stat3">MCP</div>
+                    <div class="text-sm text-gray-500 mt-1" data-i18n="hero.stat3Label">Protocol Support</div>
                 </div>
             </div>
         </div>
@@ -387,10 +389,10 @@
             <!-- Section Header -->
             <div class="text-center mb-16 reveal">
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                    强大功能，<span class="gradient-text">简洁体验</span>
+                    <span data-i18n="features.title">Powerful Features,</span> <span class="gradient-text" data-i18n="features.titleHighlight">Simple Experience</span>
                 </h2>
-                <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    一切设计都以简单为核心，让你专注于创造价值，而非配置工具
+                <p class="text-lg text-gray-400 max-w-2xl mx-auto" data-i18n="features.subtitle">
+                    Everything is designed with simplicity at its core, letting you focus on creating value, not configuring tools
                 </p>
             </div>
             
@@ -403,9 +405,9 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="infinity" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">免费满足日常使用</h3>
-                        <p class="text-gray-400 leading-relaxed">
-                            免费版每日 100 次云搜索，无限记忆存储。升级 PRO 解锁无限搜索和优先处理，适合重度用户。
+                        <h3 class="text-2xl font-bold mb-3" data-i18n="features.free.title">Free for Daily Use</h3>
+                        <p class="text-gray-400 leading-relaxed" data-i18n="features.free.desc">
+                            Free tier includes 100 daily cloud searches and unlimited memory storage. Upgrade to PRO for unlimited searches and priority processing.
                         </p>
                     </div>
                 </div>
@@ -417,9 +419,9 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-pink to-rose-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="bot" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">AI Agent 自动注册</h3>
-                        <p class="text-gray-400 leading-relaxed">
-                            AI Agents 可以自动注册并获取专属记忆空间。机器指纹隔离，同一设备上的 Agents 共享记忆，跨设备数据隔离。
+                        <h3 class="text-2xl font-bold mb-3" data-i18n="features.autoRegister.title">AI Agent Auto-Register</h3>
+                        <p class="text-gray-400 leading-relaxed" data-i18n="features.autoRegister.desc">
+                            AI Agents can automatically register and get their own memory space. Machine fingerprint isolation, Agents on the same device share memory.
                         </p>
                     </div>
                 </div>
@@ -431,9 +433,9 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-cyan to-blue-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="shield-check" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">隐私优先，数据隔离</h3>
-                        <p class="text-gray-400 leading-relaxed">
-                            你的数据完全属于你。基于 project_id 的数据隔离，支持 5 大认知分类（情景/语义/程序/情感/反思记忆）。
+                        <h3 class="text-2xl font-bold mb-3" data-i18n="features.privacy.title">Privacy First</h3>
+                        <p class="text-gray-400 leading-relaxed" data-i18n="features.privacy.desc">
+                            All memory data is encrypted with AES-256 before storage. You have full control over your data, with the option to delete at any time.
                         </p>
                     </div>
                 </div>
@@ -445,9 +447,9 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-orange to-amber-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="plug" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">MCP 协议原生支持</h3>
+                        <h3 class="text-2xl font-bold mb-3">MCP Protocol Support</h3>
                         <p class="text-gray-400 leading-relaxed">
-                            基于 Model Context Protocol 标准构建，与 Cursor、OpenClaw 等支持 MCP 的 AI Agent无缝协作。
+                            Built on Model Context Protocol standard, seamlessly works with Cursor, OpenClaw and other MCP-compatible AI Agents.
                         </p>
                     </div>
                 </div>
@@ -459,12 +461,12 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-cyan to-blue-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="lock" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">加密存储</h3>
+                        <h3 class="text-2xl font-bold mb-3">Encrypted Storage</h3>
                         <p class="text-gray-400 leading-relaxed">
-                            您的原始记忆内容使用 AES-256-GCM 加密存储。每个用户拥有独立的加密密钥，服务端永不触碰明文。
+                            Your memory content is encrypted with AES-256-GCM. Each user has their own encryption key, server never touches plaintext.
                         </p>
                         <a href="https://github.com/t0ken-ai/MemoryX" target="_blank" class="mt-4 flex items-center text-brand-cyan text-sm font-medium hover:underline">
-                            查看加密实现
+                            View Implementation
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
                         </a>
                     </div>
@@ -477,12 +479,12 @@
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <i data-lucide="code-2" class="w-7 h-7 text-white"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">开源可审计</h3>
+                        <h3 class="text-2xl font-bold mb-3">Open Source</h3>
                         <p class="text-gray-400 leading-relaxed">
-                            100% 开源代码，接受社区审计。您可以查看、验证甚至改进我们的加密实现，确保没有后门。
+                            100% open source code, community auditable. You can view, verify and improve our encryption implementation.
                         </p>
                         <a href="https://github.com/t0ken-ai/MemoryX" target="_blank" class="mt-4 flex items-center text-green-400 text-sm font-medium hover:underline">
-                            查看源码
+                            View Source
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
                         </a>
                     </div>
@@ -498,14 +500,14 @@
             <div class="text-center mb-16 reveal">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-purple/10 border border-brand-purple/20 mb-6">
                     <span class="w-2 h-2 rounded-full bg-brand-purple animate-pulse"></span>
-                    <span class="text-sm text-brand-purple">全新自动接入方式</span>
+                    <span class="text-sm text-brand-purple">New Auto-Integration</span>
                 </div>
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                    让 AI Agent <span class="gradient-text">自动拥有记忆</span>
+                    Let AI Agent <span class="gradient-text">Auto-Get Memory</span>
                 </h2>
                 <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    只需一行代码，您的 Claude、GPT、本地模型就能自动注册并共享记忆<br>
-                    <span class="text-brand-purple">同一台机器上的所有 Agent 天然协作</span>
+                    Just one line of code, your Claude, GPT, local models can auto-register and share memory<br>
+                    <span class="text-brand-purple">All Agents on the same machine naturally collaborate</span>
                 </p>
             </div>
             
@@ -515,36 +517,36 @@
                     <div class="w-12 h-12 rounded-xl bg-brand-purple/20 flex items-center justify-center mb-4">
                         <i data-lucide="fingerprint" class="w-6 h-6 text-brand-purple"></i>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">自动识别机器</h3>
-                    <p class="text-gray-400 text-sm">基于硬件信息生成唯一指纹，无需人工配置。同一台机器自动识别。</p>
+                    <h3 class="text-lg font-semibold mb-2">Auto Machine Detection</h3>
+                    <p class="text-gray-400 text-sm">Generate unique fingerprint based on hardware info, no manual config needed. Same machine auto-detected.</p>
                 </div>
                 
                 <div class="feature-card reveal p-6 rounded-2xl bg-dark-800 border border-white/5">
                     <div class="w-12 h-12 rounded-xl bg-brand-pink/20 flex items-center justify-center mb-4">
                         <i data-lucide="users" class="w-6 h-6 text-brand-pink"></i>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Agents 自动协作</h3>
-                    <p class="text-gray-400 text-sm">Claude、GPT、本地模型共享同一记忆池。一个 Agent 学到的，所有 Agent 都知道。</p>
+                    <h3 class="text-lg font-semibold mb-2">Agents Auto-Collaborate</h3>
+                    <p class="text-gray-400 text-sm">Claude, GPT, local models share the same memory pool. What one Agent learns, all Agents know.</p>
                 </div>
                 
                 <div class="feature-card reveal p-6 rounded-2xl bg-dark-800 border border-white/5">
                     <div class="w-12 h-12 rounded-xl bg-brand-cyan/20 flex items-center justify-center mb-4">
                         <i data-lucide="shield" class="w-6 h-6 text-brand-cyan"></i>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">完全隐私隔离</h3>
-                    <p class="text-gray-400 text-sm">不同机器完全隔离。您的数据永远不会泄露给其他用户。</p>
+                    <h3 class="text-lg font-semibold mb-2">Complete Privacy Isolation</h3>
+                    <p class="text-gray-400 text-sm">Different machines completely isolated. Your data never leaks to other users.</p>
                 </div>
             </div>
             
             <!-- Architecture Diagram -->
             <div class="reveal mb-16">
-                <h3 class="text-xl font-semibold text-center mb-8">架构示意</h3>
+                <h3 class="text-xl font-semibold text-center mb-8">Architecture</h3>
                 <div class="bg-dark-800 rounded-2xl p-8 border border-white/5">
                     <div class="grid md:grid-cols-2 gap-8">
                         <!-- User Machine -->
                         <div class="text-center">
                             <div class="inline-block px-4 py-2 rounded-lg bg-brand-purple/20 text-brand-purple text-sm mb-4">
-                                您的电脑
+                                Your Computer
                             </div>
                             <div class="space-y-3">
                                 <div class="bg-dark-700 rounded-lg p-4 border border-white/10">
@@ -554,19 +556,19 @@
                                     <span class="text-gray-300">🤖 ChatGPT / OpenAI</span>
                                 </div>
                                 <div class="bg-dark-700 rounded-lg p-4 border border-white/10">
-                                    <span class="text-gray-300">🤖 本地模型</span>
+                                    <span class="text-gray-300">🤖 Local Models</span>
                                 </div>
                             </div>
                             <div class="mt-4 p-4 rounded-lg bg-gradient-to-r from-brand-purple/20 to-brand-pink/20 border border-brand-purple/30">
-                                <p class="text-sm text-brand-purple">共享记忆池</p>
-                                <p class="text-xs text-gray-400 mt-1">同一指纹，协作共享</p>
+                                <p class="text-sm text-brand-purple">Shared Memory Pool</p>
+                                <p class="text-xs text-gray-400 mt-1">Same fingerprint, collaborative sharing</p>
                             </div>
                         </div>
                         
                         <!-- Other Machine -->
                         <div class="text-center">
                             <div class="inline-block px-4 py-2 rounded-lg bg-gray-500/20 text-gray-400 text-sm mb-4">
-                                其他人的电脑
+                                Other's Computer
                             </div>
                             <div class="space-y-3">
                                 <div class="bg-dark-700 rounded-lg p-4 border border-white/10 opacity-50">
@@ -574,8 +576,8 @@
                                 </div>
                             </div>
                             <div class="mt-4 p-4 rounded-lg bg-gradient-to-r from-gray-500/20 to-gray-600/20 border border-gray-500/30">
-                                <p class="text-sm text-gray-400">独立记忆池</p>
-                                <p class="text-xs text-gray-500 mt-1">完全隔离，无法访问您的数据</p>
+                                <p class="text-sm text-gray-400">Independent Memory Pool</p>
+                                <p class="text-xs text-gray-500 mt-1">Completely isolated, cannot access your data</p>
                             </div>
                         </div>
                     </div>
@@ -591,10 +593,10 @@
             <!-- Section Header -->
             <div class="text-center mb-16 reveal">
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                    <span class="gradient-text">API</span> 文档
+                    <span class="gradient-text">API</span> Documentation
                 </h2>
                 <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    22+ API 端点，完整的记忆管理能力
+                    22+ API endpoints, complete memory management capabilities
                 </p>
             </div>
             
@@ -605,7 +607,7 @@
                         <div class="w-10 h-10 rounded-lg bg-brand-purple/20 flex items-center justify-center">
                             <i data-lucide="database" class="w-5 h-5 text-brand-purple"></i>
                         </div>
-                        <h3 class="font-semibold">记忆管理</h3>
+                        <h3 class="font-semibold">Memory Management</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li><code class="text-brand-cyan">POST</code> /api/memories</li>
@@ -622,7 +624,7 @@
                         <div class="w-10 h-10 rounded-lg bg-brand-pink/20 flex items-center justify-center">
                             <i data-lucide="bot" class="w-5 h-5 text-brand-pink"></i>
                         </div>
-                        <h3 class="font-semibold">Agent 管理</h3>
+                        <h3 class="font-semibold">Agent Management</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li><code class="text-brand-cyan">POST</code> /api/auto-register</li>
@@ -638,7 +640,7 @@
                         <div class="w-10 h-10 rounded-lg bg-brand-cyan/20 flex items-center justify-center">
                             <i data-lucide="key" class="w-5 h-5 text-brand-cyan"></i>
                         </div>
-                        <h3 class="font-semibold">认证 & 订阅</h3>
+                        <h3 class="font-semibold">Auth & Subscription</h3>
                     </div>
                     <ul class="space-y-2 text-sm text-gray-400">
                         <li><code class="text-brand-cyan">POST</code> /api/firebase</li>
@@ -655,21 +657,21 @@
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-semibold flex items-center gap-2">
                         <i data-lucide="globe" class="w-5 h-5 text-brand-orange"></i>
-                        API 基础地址
+                        API Base URL
                     </h3>
                     <button class="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors" onclick="copyText('https://t0ken.ai/api')">
                         <i data-lucide="copy" class="w-4 h-4"></i>
                     </button>
                 </div>
                 <code class="font-mono text-brand-cyan">https://t0ken.ai/api</code>
-                <p class="text-sm text-gray-500 mt-2">所有 API 请求需要在 Header 中包含 <code>X-API-Key</code></p>
+                <p class="text-sm text-gray-500 mt-2">All API requests require <code>X-API-Key</code> in Header</p>
             </div>
             
             <!-- Full Docs CTA -->
             <div class="text-center reveal">
                 <a href="https://docs.t0ken.ai/" target="_blank" class="inline-flex items-center gap-2 text-brand-purple hover:text-brand-pink transition-colors font-medium">
                     <i data-lucide="book-open" class="w-5 h-5"></i>
-                    查看完整 API 文档 (Mintlify)
+                    View Full API Documentation (Mintlify)
                 </a>
             </div>
         </div>
@@ -681,10 +683,10 @@
             <!-- Section Header -->
             <div class="text-center mb-16 reveal">
                 <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-                    简单定价，<span class="gradient-text">按需选择</span>
+                    Simple Pricing, <span class="gradient-text">Choose What You Need</span>
                 </h2>
                 <p class="text-lg text-gray-400 max-w-2xl mx-auto">
-                    免费版已足够大多数用户，PRO 版解锁无限搜索
+                    Free tier is enough for most users, PRO unlocks unlimited searches
                 </p>
             </div>
             
@@ -692,39 +694,39 @@
             <div class="grid md:grid-cols-2 gap-8 reveal">
                 <!-- Free Plan -->
                 <div class="relative p-8 rounded-2xl bg-dark-800/50 border border-white/5 hover:border-white/10 transition-colors">
-                    <h3 class="text-xl font-bold mb-2">FREE</h3>
-                    <p class="text-gray-400 mb-6">适合个人开发者</p>
+                    <h3 class="text-xl font-bold mb-2" data-i18n="pricing.free.name">FREE</h3>
+                    <p class="text-gray-400 mb-6">For individual developers</p>
                     
                     <div class="flex items-baseline gap-2 mb-8">
-                        <span class="text-5xl font-bold">$0</span>
-                        <span class="text-gray-500">/ 永久</span>
+                        <span class="text-5xl font-bold" data-i18n="pricing.free.price">$0</span>
+                        <span class="text-gray-500" data-i18n="pricing.free.period">forever</span>
                     </div>
                     
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">无限记忆存储</span>
+                            <span class="text-gray-300" data-i18n="pricing.free.feature2">Unlimited memory storage</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">无限批量上传</span>
+                            <span class="text-gray-300">Unlimited batch upload</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">每日 100 次云搜索</span>
+                            <span class="text-gray-300" data-i18n="pricing.free.feature1">100 searches/day</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">AI Agent 自动注册</span>
+                            <span class="text-gray-300">AI Agent auto-register</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">MCP 协议支持</span>
+                            <span class="text-gray-300">MCP protocol support</span>
                         </li>
                     </ul>
                     
-                    <a href="/portal/index.html" class="block w-full py-3 rounded-full bg-white/5 border border-white/10 text-center font-semibold hover:bg-white/10 transition-colors">
-                        免费开始
+                    <a href="/portal/index.html" class="block w-full py-3 rounded-full bg-white/5 border border-white/10 text-center font-semibold hover:bg-white/10 transition-colors" data-i18n="pricing.free.cta">
+                        Get Started
                     </a>
                 </div>
                 
@@ -736,35 +738,35 @@
                         </div>
                     </div>
                     
-                    <h3 class="text-xl font-bold mb-2">PRO</h3>
-                    <p class="text-gray-400 mb-6">适合专业用户和团队</p>
+                    <h3 class="text-xl font-bold mb-2" data-i18n="pricing.pro.name">PRO</h3>
+                    <p class="text-gray-400 mb-6">For power users and teams</p>
                     
                     <div class="flex items-baseline gap-2 mb-8">
-                        <span class="text-5xl font-bold gradient-text">$9.9</span>
-                        <span class="text-gray-500">/ 月</span>
+                        <span class="text-5xl font-bold gradient-text" data-i18n="pricing.pro.price">$9.99</span>
+                        <span class="text-gray-500" data-i18n="pricing.pro.period">/month</span>
                     </div>
                     
                     <ul class="space-y-4 mb-8">
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">包含 FREE 所有功能</span>
+                            <span class="text-gray-300">All FREE features</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300 font-semibold">无限云搜索</span>
+                            <span class="text-gray-300 font-semibold" data-i18n="pricing.pro.feature1">Unlimited searches</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">优先任务处理</span>
+                            <span class="text-gray-300" data-i18n="pricing.pro.feature2">Priority processing</span>
                         </li>
                         <li class="flex items-center gap-3">
                             <i data-lucide="check" class="w-5 h-5 text-green-400 flex-shrink-0"></i>
-                            <span class="text-gray-300">优先技术支持</span>
+                            <span class="text-gray-300" data-i18n="pricing.pro.feature4">Priority support</span>
                         </li>
                     </ul>
                     
-                    <a href="/portal/index.html" class="btn-shine block w-full py-3 rounded-full bg-gradient-to-r from-brand-purple to-brand-pink text-center font-semibold hover:shadow-lg hover:shadow-brand-purple/30 transition-all">
-                        升级 PRO
+                    <a href="/portal/index.html" class="btn-shine block w-full py-3 rounded-full bg-gradient-to-r from-brand-purple to-brand-pink text-center font-semibold hover:shadow-lg hover:shadow-brand-purple/30 transition-all" data-i18n="pricing.pro.cta">
+                        Upgrade to PRO
                     </a>
                 </div>
             </div>
@@ -772,9 +774,9 @@
             <!-- Enterprise Hint -->
             <div class="mt-12 text-center reveal">
                 <p class="text-gray-400">
-                    需要企业级支持或私有部署？
+                    Need enterprise support or self-hosting?
                     <a href="mailto:business@t0ken.ai" class="text-brand-cyan hover:text-brand-purple transition-colors font-medium">
-                        联系我们
+                        Contact Us
                     </a>
                 </p>
             </div>
@@ -791,8 +793,8 @@
                         <i data-lucide="brain" class="w-6 h-6 text-purple-400"></i>
                         <span class="font-semibold">MemoryX</span>
                     </a>
-                    <p class="text-gray-400 mb-6 max-w-sm">
-                        免费的认知记忆引擎，让 AI 真正拥有记忆，持续学习成长。
+                    <p class="text-gray-400 mb-6 max-w-sm" data-i18n="footer.description">
+                        Free cognitive memory engine, enabling AI to truly have memory and continuously learn.
                     </p>
                     <div class="flex items-center gap-4">
                         <a href="https://github.com/t0ken-ai/MemoryX" target="_blank" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
@@ -809,37 +811,37 @@
                 
                 <!-- Product -->
                 <div>
-                    <h4 class="font-semibold mb-4">产品</h4>
+                    <h4 class="font-semibold mb-4" data-i18n="footer.product">Product</h4>
                     <ul class="space-y-3">
-                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">功能特性</a></li>
-                        <li><a href="#quick-start" class="text-gray-400 hover:text-white transition-colors">AI Agent注册</a></li>
-                        <li><a href="#api-docs" class="text-gray-400 hover:text-white transition-colors">API 文档</a></li>
-                        <li><a href="#quickstart" class="text-gray-400 hover:text-white transition-colors">接入SDK</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#quick-start" class="text-gray-400 hover:text-white transition-colors">AI Agent Register</a></li>
+                        <li><a href="#api-docs" class="text-gray-400 hover:text-white transition-colors">API Docs</a></li>
+                        <li><a href="#quickstart" class="text-gray-400 hover:text-white transition-colors">SDK Integration</a></li>
                         <li><a href="https://status.t0ken.ai" target="_blank" class="text-gray-400 hover:text-white transition-colors">Site Status</a></li>
                     </ul>
                 </div>
                 
                 <!-- Resources -->
                 <div>
-                    <h4 class="font-semibold mb-4">资源</h4>
+                    <h4 class="font-semibold mb-4" data-i18n="footer.developers">Developers</h4>
                     <ul class="space-y-3">
                         <li><a href="https://github.com/t0ken-ai/MemoryX" target="_blank" class="text-gray-400 hover:text-white transition-colors">GitHub</a></li>
                         <li><a href="https://docs.t0ken.ai/" target="_blank" class="text-gray-400 hover:text-white transition-colors">API Docs (Mintlify)</a></li>
-                        <li><a href="/agent-register" class="text-gray-400 hover:text-white transition-colors">Agent 注册指南</a></li>
-                        <li><a href="privacy.html" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
-                        <li><a href="terms.html" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
+                        <li><a href="/agent-register" class="text-gray-400 hover:text-white transition-colors">Agent Guide</a></li>
+                        <li><a href="privacy.html" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="terms.html" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
             </div>
             
             <!-- Bottom -->
             <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p class="text-sm text-gray-500">
-                    © 2026 MemoryX · <a href="https://github.com/t0ken-ai/MemoryX/blob/main/LICENSE" target="_blank" class="hover:text-white transition-colors">MIT License</a>
+                <p class="text-sm text-gray-500" data-i18n="footer.copyright">
+                    © 2026 MemoryX. All rights reserved.
                 </p>
                 <div class="flex items-center gap-6 text-sm">
-                    <a href="privacy.html" class="text-gray-500 hover:text-white transition-colors">隐私政策</a>
-                    <a href="terms.html" class="text-gray-500 hover:text-white transition-colors">使用条款</a>
+                    <a href="privacy.html" class="text-gray-500 hover:text-white transition-colors" data-i18n="footer.privacy">Privacy Policy</a>
+                    <a href="terms.html" class="text-gray-500 hover:text-white transition-colors" data-i18n="footer.terms">Terms of Service</a>
                     <span class="text-gray-500">business@t0ken.ai</span>
                 </div>
             </div>
@@ -907,7 +909,8 @@
                 btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i>';
                 lucide.createIcons();
                 
-                showToast('已复制到剪贴板');
+                const lang = window.i18n.getCurrentLanguage();
+                showToast(lang === 'zh' ? '已复制到剪贴板' : 'Copied to clipboard');
                 
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
@@ -919,7 +922,8 @@
         // Copy Text Function
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
-                showToast('已复制到剪贴板');
+                const lang = window.i18n.getCurrentLanguage();
+                showToast(lang === 'zh' ? '已复制到剪贴板' : 'Copied to clipboard');
             });
         }
         

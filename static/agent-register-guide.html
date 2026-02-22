@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>插件安装指南 - MemoryX</title>
-    <meta name="description" content="让您的 AI Agent 自动安装 MemoryX 插件，获得持久记忆能力">
+    <title>Plugin Installation Guide - MemoryX</title>
+    <meta name="description" content="Let your AI Agent auto-install MemoryX plugin and get persistent memory capabilities">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="/js/i18n.js"></script>
     
     <style>
         body { 
@@ -68,7 +69,7 @@
                 </a>
                 
                 <div class="flex items-center gap-6">
-                    <a href="/portal/" class="text-sm text-gray-400 hover:text-white transition-colors">管理后台 →</a>
+                    <a href="/portal/" class="text-sm text-gray-400 hover:text-white transition-colors" data-i18n="agent.dashboard">Dashboard →</a>
                 </div>
             </div>
         </div>
@@ -79,19 +80,19 @@
         <div class="max-w-4xl mx-auto text-center">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm mb-6">
                 <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                Agent 自动安装
+                <span data-i18n="agent.autoInstall">Agent Auto-Install</span>
             </div>
             
             <h1 class="text-5xl md:text-6xl font-bold mb-6">
-                让 AI Agent
+                <span data-i18n="agent.heroTitle1">Let AI Agent</span>
                 <br>
-                <span class="gradient-text">自动安装插件</span>
+                <span class="gradient-text" data-i18n="agent.heroTitle2">Auto-Install Plugin</span>
             </h1>
             
             <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                复制下方命令，发送给您的 Agent，即可自动完成安装。
+                <span data-i18n="agent.heroSubtitle1">Copy the command below and send to your Agent to complete installation automatically.</span>
                 <br>
-                <span class="text-purple-400">支持 OpenClaw 和 VS Code</span>
+                <span class="text-purple-400" data-i18n="agent.heroSubtitle2">Supports OpenClaw and VS Code</span>
             </p>
         </div>
     </section>
@@ -101,10 +102,10 @@
         <div class="max-w-5xl mx-auto">
             <div class="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10">
                 <button class="tab-btn active flex-1 px-6 py-3 rounded-lg font-medium text-gray-400" data-tab="openclaw">
-                    🐚 OpenClaw 插件
+                    🐚 OpenClaw Plugin
                 </button>
                 <button class="tab-btn flex-1 px-6 py-3 rounded-lg font-medium text-gray-400" data-tab="vscode">
-                    💻 VS Code 插件
+                    💻 VS Code Plugin
                 </button>
             </div>
         </div>
@@ -115,22 +116,22 @@
         <div class="max-w-5xl mx-auto">
             <!-- What it does -->
             <div class="mb-12 text-center">
-                <h2 class="text-2xl font-bold mb-4">OpenClaw 插件功能</h2>
+                <h2 class="text-2xl font-bold mb-4" data-i18n="agent.openclawFeatures">OpenClaw Plugin Features</h2>
                 <div class="grid md:grid-cols-3 gap-4">
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-purple-400 text-2xl mb-2">🧠</div>
-                        <h3 class="font-semibold mb-1">自动召回</h3>
-                        <p class="text-sm text-gray-400">对话前自动搜索相关记忆</p>
+                        <h3 class="font-semibold mb-1" data-i18n="agent.autoRecall">Auto Recall</h3>
+                        <p class="text-sm text-gray-400" data-i18n="agent.autoRecallDesc">Auto search relevant memories before conversation</p>
                     </div>
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-pink-400 text-2xl mb-2">💾</div>
-                        <h3 class="font-semibold mb-1">自动保存</h3>
-                        <p class="text-sm text-gray-400">对话后自动保存到 MemoryX</p>
+                        <h3 class="font-semibold mb-1" data-i18n="agent.autoSave">Auto Save</h3>
+                        <p class="text-sm text-gray-400" data-i18n="agent.autoSaveDesc">Auto save to MemoryX after conversation</p>
                     </div>
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-blue-400 text-2xl mb-2">⚡</div>
                         <h3 class="font-semibold mb-1">Function Calling</h3>
-                        <p class="text-sm text-gray-400">LLM 可主动调用记忆工具</p>
+                        <p class="text-sm text-gray-400" data-i18n="agent.functionCallingDesc">LLM can actively call memory tools</p>
                     </div>
                 </div>
             </div>
@@ -139,20 +140,20 @@
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">1</span>
-                    给 Agent 发送安装命令
+                    <span data-i18n="agent.sendInstallCmd">Send install command to Agent</span>
                 </h3>
                 
                 <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500">复制给 Agent 执行</span>
-                        <button onclick="copyCode('openclaw-install')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400">复制</button>
+                        <span class="text-sm text-gray-500" data-i18n="agent.copyToAgent">Copy for Agent to execute</span>
+                        <button onclick="copyCode('openclaw-install')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400" data-i18n="agent.copy">Copy</button>
                     </div>
-                    <pre id="openclaw-install" class="text-sm text-gray-300 overflow-x-auto">请帮我安装 MemoryX OpenClaw 插件：
+                    <pre id="openclaw-install" class="text-sm text-gray-300 overflow-x-auto">Please help me install MemoryX OpenClaw plugin:
 
 openclaw plugins install @t0ken.ai/memoryx-openclaw-plugin
 openclaw gateway restart
 
-安装完成后告诉我。</pre>
+Let me know when installation is complete.</pre>
                 </div>
             </div>
 
@@ -160,13 +161,13 @@ openclaw gateway restart
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">2</span>
-                    配置（可选）
+                    <span data-i18n="agent.configOptional">Config (Optional)</span>
                 </h3>
                 
                 <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-sm text-gray-500">~/.openclaw/openclaw.json</span>
-                        <button onclick="copyCode('openclaw-config')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400">复制</button>
+                        <button onclick="copyCode('openclaw-config')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400" data-i18n="agent.copy">Copy</button>
                     </div>
                     <pre id="openclaw-config" class="text-sm text-gray-300 overflow-x-auto">{
   "plugins": {
@@ -192,38 +193,38 @@ openclaw gateway restart
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">3</span>
-                    Function Calling 工具
+                    <span data-i18n="agent.functionCallingTools">Function Calling Tools</span>
                 </h3>
                 
                 <div class="ml-10 overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-white/10">
-                                <th class="text-left py-3 px-4 text-gray-400">工具</th>
-                                <th class="text-left py-3 px-4 text-gray-400">功能</th>
-                                <th class="text-left py-3 px-4 text-gray-400">触发场景</th>
+                                <th class="text-left py-3 px-4 text-gray-400" data-i18n="agent.tool">Tool</th>
+                                <th class="text-left py-3 px-4 text-gray-400" data-i18n="agent.function">Function</th>
+                                <th class="text-left py-3 px-4 text-gray-400" data-i18n="agent.trigger">Trigger</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr class="border-b border-white/5">
                                 <td class="py-3 px-4"><code class="text-purple-400">memoryx_recall</code></td>
-                                <td class="py-3 px-4 text-gray-300">搜索记忆</td>
-                                <td class="py-3 px-4 text-gray-400">"你还记得我说过...?"</td>
+                                <td class="py-3 px-4 text-gray-300" data-i18n="agent.searchMemory">Search memories</td>
+                                <td class="py-3 px-4 text-gray-400">"Do you remember I said...?"</td>
                             </tr>
                             <tr class="border-b border-white/5">
                                 <td class="py-3 px-4"><code class="text-pink-400">memoryx_store</code></td>
-                                <td class="py-3 px-4 text-gray-300">保存记忆</td>
-                                <td class="py-3 px-4 text-gray-400">"记住这个..."</td>
+                                <td class="py-3 px-4 text-gray-300" data-i18n="agent.saveMemory">Save memory</td>
+                                <td class="py-3 px-4 text-gray-400">"Remember this..."</td>
                             </tr>
                             <tr class="border-b border-white/5">
                                 <td class="py-3 px-4"><code class="text-blue-400">memoryx_list</code></td>
-                                <td class="py-3 px-4 text-gray-300">列出记忆</td>
-                                <td class="py-3 px-4 text-gray-400">"你还知道关于我的什么?"</td>
+                                <td class="py-3 px-4 text-gray-300" data-i18n="agent.listMemory">List memories</td>
+                                <td class="py-3 px-4 text-gray-400">"What else do you know about me?"</td>
                             </tr>
                             <tr>
                                 <td class="py-3 px-4"><code class="text-red-400">memoryx_forget</code></td>
-                                <td class="py-3 px-4 text-gray-300">删除记忆</td>
-                                <td class="py-3 px-4 text-gray-400">"忘掉这个..."</td>
+                                <td class="py-3 px-4 text-gray-300" data-i18n="agent.deleteMemory">Delete memory</td>
+                                <td class="py-3 px-4 text-gray-400">"Forget this..."</td>
                             </tr>
                         </tbody>
                     </table>
@@ -237,22 +238,22 @@ openclaw gateway restart
         <div class="max-w-5xl mx-auto">
             <!-- What it does -->
             <div class="mb-12 text-center">
-                <h2 class="text-2xl font-bold mb-4">VS Code 插件功能</h2>
+                <h2 class="text-2xl font-bold mb-4" data-i18n="agent.vscodeFeatures">VS Code Plugin Features</h2>
                 <div class="grid md:grid-cols-3 gap-4">
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-purple-400 text-2xl mb-2">💬</div>
                         <h3 class="font-semibold mb-1">@memoryx</h3>
-                        <p class="text-sm text-gray-400">在 Chat 中直接使用</p>
+                        <p class="text-sm text-gray-400" data-i18n="agent.chatDirect">Use directly in Chat</p>
                     </div>
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-pink-400 text-2xl mb-2">🔄</div>
-                        <h3 class="font-semibold mb-1">自动同步</h3>
-                        <p class="text-sm text-gray-400">对话自动采集和召回</p>
+                        <h3 class="font-semibold mb-1" data-i18n="agent.autoSync">Auto Sync</h3>
+                        <p class="text-sm text-gray-400" data-i18n="agent.autoSyncDesc">Auto conversation collection and recall</p>
                     </div>
                     <div class="feature-card rounded-xl p-4">
                         <div class="text-blue-400 text-2xl mb-2">⚡</div>
-                        <h3 class="font-semibold mb-1">零配置</h3>
-                        <p class="text-sm text-gray-400">自动注册，开箱即用</p>
+                        <h3 class="font-semibold mb-1" data-i18n="agent.zeroConfig">Zero Config</h3>
+                        <p class="text-sm text-gray-400" data-i18n="agent.zeroConfigDesc">Auto register, ready to use</p>
                     </div>
                 </div>
             </div>
@@ -261,19 +262,19 @@ openclaw gateway restart
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">1</span>
-                    给 Agent 发送安装命令
+                    <span data-i18n="agent.sendInstallCmd">Send install command to Agent</span>
                 </h3>
                 
                 <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500">复制给 Agent 执行</span>
-                        <button onclick="copyCode('vscode-install')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                        <span class="text-sm text-gray-500" data-i18n="agent.copyToAgent">Copy for Agent to execute</span>
+                        <button onclick="copyCode('vscode-install')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400" data-i18n="agent.copy">Copy</button>
                     </div>
-                    <pre id="vscode-install" class="text-sm text-gray-300 overflow-x-auto">请帮我安装 MemoryX VS Code 插件：
+                    <pre id="vscode-install" class="text-sm text-gray-300 overflow-x-auto">Please help me install MemoryX VS Code plugin:
 
 curl -fsSL https://t0ken.ai/install-vscode.sh | bash
 
-安装完成后告诉我。</pre>
+Let me know when installation is complete.</pre>
                 </div>
             </div>
 
@@ -281,21 +282,21 @@ curl -fsSL https://t0ken.ai/install-vscode.sh | bash
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">2</span>
-                    使用方式
+                    <span data-i18n="agent.usage">Usage</span>
                 </h3>
                 
                 <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500">在 VS Code Chat 中 (Cmd/Ctrl + Shift + I)</span>
-                        <button onclick="copyCode('vscode-usage')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                        <span class="text-sm text-gray-500" data-i18n="agent.vscodeChat">In VS Code Chat (Cmd/Ctrl + Shift + I)</span>
+                        <button onclick="copyCode('vscode-usage')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400" data-i18n="agent.copy">Copy</button>
                     </div>
-                    <pre id="vscode-usage" class="text-sm text-gray-300 overflow-x-auto">@memoryx 帮我写一个登录函数
+                    <pre id="vscode-usage" class="text-sm text-gray-300 overflow-x-auto">@memoryx Help me write a login function
 
-# 可用命令：
-@memoryx /search 认证      # 搜索记忆
-@memoryx /list             # 列出最近记忆
-@memoryx /remember         # 手动保存对话
-@memoryx /clear            # 清除所有记忆</pre>
+# Available commands:
+@memoryx /search auth      # Search memories
+@memoryx /list             # List recent memories
+@memoryx /remember         # Manually save conversation
+@memoryx /clear            # Clear all memories</pre>
                 </div>
             </div>
 
