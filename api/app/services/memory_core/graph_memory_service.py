@@ -1046,13 +1046,26 @@ class GraphMemoryService:
             results["neo4j"] = True
             logger.info(f"Deleted from Neo4j: {len(entities)} entities, {len(relations)} relations")
         
-        # Step 4: 最后删除 PostgreSQL（主记录）
+        # Step 4: 最后删除 PostgreSQL（Fact + Memory 父记录）
         if fact_id:
             db = SessionLocal()
             try:
                 fact = db.query(Fact).filter(Fact.id == fact_id).first()
                 if fact:
+                    memory_id = fact.memory_id
+                    # 删除 Fact
                     db.delete(fact)
+                    # 删除 Memory 父记录（如果存在且没有其他 Fact 关联）
+                    if memory_id:
+                        other_facts_count = db.query(Fact).filter(
+                            Fact.memory_id == memory_id,
+                            Fact.id != fact_id
+                        ).count()
+                        if other_facts_count == 0:
+                            memory = db.query(Memory).filter(Memory.id == memory_id).first()
+                            if memory:
+                                db.delete(memory)
+                                logger.info(f"Deleted orphan Memory: id={memory_id}")
                     db.commit()
                     results["postgres"] = True
                     logger.info(f"Deleted fact from PostgreSQL: id={fact_id}, vector_id={vector_id}")
@@ -1142,11 +1155,22 @@ class GraphMemoryService:
                     extraction = await self.extract_entities_and_relations(text, user_id)
                     entities = extraction.get("entities", [])
                     relations = extraction.get("relations", [])
-                    
+
                     vector_id = str(uuid.uuid4())
-                    
+
                     try:
+                        # 先创建 Memory 父记录
+                        memory_record = Memory(
+                            content=text,
+                            user_id=int(user_id) if user_id.isdigit() else 1,
+                            meta=metadata or {}
+                        )
+                        db.add(memory_record)
+                        db.flush()
+                        
+                        # 再创建 Fact 子记录
                         fact_record = Fact(
+                            memory_id=memory_record.id,
                             user_id=int(user_id) if user_id.isdigit() else 1,
                             content=text,
                             category="fact",
@@ -1692,15 +1716,27 @@ class GraphMemoryService:
         qdrant_time = asyncio.get_event_loop().time() - start_time - extraction_time - neo4j_time - embed_time
         logger.info(f"Qdrant batch write: {qdrant_time:.2f}s")
         
-        # 写入 PostgreSQL Fact 表（之前缺失）
+        # 写入 PostgreSQL Memory + Fact 表
         db = SessionLocal()
         stored_facts = []
         try:
             for i, (content, memory_id) in enumerate(zip(contents, memory_ids)):
                 entities_i = extractions[i].get("entities", [])
                 relations_i = extractions[i].get("relations", [])
+                metadata_i = metadatas[i] if metadatas and i < len(metadatas) else {}
                 
+                # 先创建 Memory 父记录
+                memory_record = Memory(
+                    content=content,
+                    user_id=int(user_id) if user_id.isdigit() else 1,
+                    meta=metadata_i
+                )
+                db.add(memory_record)
+                db.flush()
+                
+                # 再创建 Fact 子记录
                 fact_record = Fact(
+                    memory_id=memory_record.id,
                     user_id=int(user_id) if user_id.isdigit() else 1,
                     content=content,
                     category="fact",
@@ -1713,6 +1749,7 @@ class GraphMemoryService:
                 stored_facts.append({
                     "id": memory_id,
                     "fact_id": None,  # flush 后填充
+                    "memory_id": memory_record.id,
                     "content": content,
                     "entities": entities_i,
                     "relations": relations_i,
