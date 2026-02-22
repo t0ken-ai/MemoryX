@@ -251,7 +251,7 @@ const translations = {
       welcome: "Welcome to MemoryX",
       signIn: "Sign in with your email",
       emailLabel: "Email Address",
-      emailPlaceholder: "you@example.com",
+      emailPlaceholder: "business@t0ken.ai",
       emailHint: "We'll send you a magic link to sign in instantly. No password needed!",
       sendLink: "Send Magic Link",
       checkEmail: "Check your email",
