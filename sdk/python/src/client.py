@@ -362,6 +362,25 @@ class APIClient:
         self._request("DELETE", f"/v1/memories/{memory_id}")
         return {"success": True}
     
+    def get_task_status(self, task_id: str) -> Dict[str, Any]:
+        """
+        Get async task status
+        
+        Args:
+            task_id: Task ID returned from send_memories/send_conversation
+        
+        Returns:
+            {
+                "task_id": "...",
+                "status": "PENDING|STARTED|SUCCESS|FAILURE",
+                "result": {...}  # Only when completed
+            }
+        """
+        if not self.api_key:
+            raise MemoryXError("Not authenticated. Call auto_register() first.")
+        
+        return self._request("GET", f"/v1/memories/task/{task_id}")
+    
     def get_quota(self) -> Dict[str, Any]:
         """
         Get quota information
