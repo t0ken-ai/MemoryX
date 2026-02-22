@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 import logging
-import asyncio
 
 from app.core.database import (
     get_db, User, APIKey, UserQuota, 
@@ -16,7 +15,6 @@ from app.services.memory_queue import (
     batch_add_memory_task,
     get_queue_for_tier
 )
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
