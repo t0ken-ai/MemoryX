@@ -583,65 +583,23 @@
             </div>
             
             <!-- Quick Start Code -->
-            <div id="quick-start" class="reveal mb-12" style="scroll-margin-top: 100px;">
-                <h3 class="text-xl font-semibold text-center mb-8">2 步让 Agent 拥有记忆</h3>
+            <div id="quick-start" class="reveal mb-12 text-center" style="scroll-margin-top: 100px;">
+                <h3 class="text-xl font-semibold mb-4">让 Agent 自动安装插件</h3>
+                <p class="text-gray-400 mb-6 max-w-2xl mx-auto">
+                    支持 <span class="text-brand-purple">OpenClaw</span> 和 <span class="text-brand-cyan">VS Code</span> 插件，
+                    只需复制命令发送给 Agent，即可自动完成安装和配置
+                </p>
                 
-                <div class="space-y-6">
-                    <!-- Step 1 -->
-                    <div class="flex flex-col md:flex-row gap-6 items-start">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-purple flex items-center justify-center text-white font-bold">1</div>
-                        
-                        <div class="flex-1">
-                            <h4 class="font-semibold mb-2">让 Agent 安装并接入</h4>
-                            <p class="text-gray-400 mb-4">复制以下完整指令发送给你的 AI Agent（Claude、GPT、Cursor 等）</p>
-                            
-                            <div class="code-block rounded-xl p-4 relative group mb-4">
-                                <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode(this)">
-                                    <i data-lucide="copy" class="w-4 h-4"></i>
-                                </button>
-                                <pre class="font-mono text-sm text-gray-300"><code>请帮我接入 MemoryX 记忆系统。
-
-请按以下步骤操作：
-1. 安装 MemoryX SDK：pip install t0ken-memoryx
-2. 初始化并自动注册：
-   from memoryx import connect_memory
-   memory = connect_memory()
-3. 完成后告诉我：
-   - 你的 Agent ID
-   - 6位认领验证码（用于我在后台绑定这台机器）
-
-如果安装失败，告诉我错误信息。</code></pre>
-                            </div>
-                            
-                            <div class="text-sm text-gray-500 space-y-1">
-                                <p>✓ Agent 自动安装 SDK 并注册</p>
-                                <p>✓ 立即开始记录记忆（永久保存，无需提前认领）</p>
-                                <p>✓ Agent 返回 6 位验证码供你认领绑定</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2 -->
-                    <div class="flex flex-col md:flex-row gap-6 items-start">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-pink flex items-center justify-center text-white font-bold">2</div>
-                        
-                        <div class="flex-1">
-                            <h4 class="font-semibold mb-2">输入验证码认领记忆</h4>
-                            <p class="text-gray-400 mb-4">访问认领页面，输入 Agent 提供的 6 位验证码，将这台机器的记忆绑定到你的账户</p>
-                            
-                            <div class="flex flex-col sm:flex-row gap-3">
-                                <a href="/agent-register" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-purple hover:bg-brand-purple/80 text-white rounded-lg font-medium transition-colors">
-                                    <i data-lucide="link" class="w-4 h-4"></i>
-                                    认领我的机器
-                                </a>
-                            </div>
-                            
-                            <p class="text-sm text-gray-500 mt-3">
-                                💡 提示：任何时候都可以问 Agent "我的认领验证码是多少？" 来获取验证码
-                            </p>
-                        </div>
-                    </div>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="/agent-register" class="btn-shine inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gradient-to-r from-brand-purple to-brand-pink font-semibold text-lg hover:shadow-lg hover:shadow-brand-purple/30 transition-all">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        查看安装指南
+                    </a>
                 </div>
+                
+                <p class="text-sm text-gray-500 mt-4">
+                    安装完成后，Agent 将自动获得持久记忆能力
+                </p>
             </div>
             
             <!-- CTA -->
