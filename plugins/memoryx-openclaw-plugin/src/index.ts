@@ -196,8 +196,10 @@ class MemoryXPlugin {
     public async endConversation(): Promise<void> {
         try {
             const sdk = await getSDK(this.pluginConfig);
+            // Flush immediately before starting new conversation
+            await sdk.flush();
+            log("Conversation ended, flushed queue");
             sdk.startNewConversation();
-            log("Conversation ended, starting new conversation");
         } catch (e) {
             log(`End conversation failed: ${e}`);
         }
