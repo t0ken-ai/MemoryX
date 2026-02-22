@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>让 AI Agent 自动注册 - MemoryX</title>
-    <meta name="description" content="让您的 AI Agent 自动接入 MemoryX，共享记忆能力">
+    <title>插件安装指南 - MemoryX</title>
+    <meta name="description" content="让您的 AI Agent 自动安装 MemoryX 插件，获得持久记忆能力">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -27,16 +27,18 @@
             background: #1a1a2e;
             border: 1px solid #2a2a3e;
         }
-        .step-number {
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
             background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
             color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
         .feature-card {
             background: rgba(255, 255, 255, 0.03);
@@ -46,6 +48,12 @@
         .feature-card:hover {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(168, 85, 247, 0.3);
+        }
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
         }
     </style>
 </head>
@@ -73,277 +81,329 @@
         <div class="max-w-4xl mx-auto text-center">
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm mb-6">
                 <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                全新自动接入方式
+                Agent 自动安装
             </div>
             
             <h1 class="text-5xl md:text-6xl font-bold mb-6">
                 让 AI Agent
                 <br>
-                <span class="gradient-text">自动拥有记忆</span>
+                <span class="gradient-text">自动安装插件</span>
             </h1>
             
             <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                只需一行代码，您的 Claude、GPT、本地模型就能自动注册并共享记忆。
+                复制下方命令，发送给您的 Agent，即可自动完成安装。
                 <br>
-                <span class="text-purple-400">同一台机器上的所有 Agent 天然协作</span>
+                <span class="text-purple-400">支持 OpenClaw 和 VS Code</span>
             </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#quickstart" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-medium transition-all">
-                    立即开始
-                </a>
-                <a href="#how-it-works" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/20 text-white rounded-xl font-medium transition-all">
-                    了解原理
-                </a>
+        </div>
+    </section>
+
+    <!-- Tab Navigation -->
+    <section class="px-6">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/10">
+                <button class="tab-btn active flex-1 px-6 py-3 rounded-lg font-medium text-gray-400" data-tab="openclaw">
+                    🐚 OpenClaw 插件
+                </button>
+                <button class="tab-btn flex-1 px-6 py-3 rounded-lg font-medium text-gray-400" data-tab="vscode">
+                    💻 VS Code 插件
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- Quick Start -->
-    <section id="quickstart" class="py-16 px-6 border-t border-white/5">
+    <!-- OpenClaw Tab Content -->
+    <section id="openclaw" class="tab-content active py-16 px-6">
         <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">3 步接入记忆能力</h2>
-                <p class="text-gray-400">复制代码，发送给您的 Agent，自动完成注册</p>
+            <!-- What it does -->
+            <div class="mb-12 text-center">
+                <h2 class="text-2xl font-bold mb-4">OpenClaw 插件功能</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-purple-400 text-2xl mb-2">🧠</div>
+                        <h3 class="font-semibold mb-1">自动召回</h3>
+                        <p class="text-sm text-gray-400">对话前自动搜索相关记忆</p>
+                    </div>
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-pink-400 text-2xl mb-2">💾</div>
+                        <h3 class="font-semibold mb-1">自动保存</h3>
+                        <p class="text-sm text-gray-400">对话后自动保存到 MemoryX</p>
+                    </div>
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-blue-400 text-2xl mb-2">⚡</div>
+                        <h3 class="font-semibold mb-1">Function Calling</h3>
+                        <p class="text-sm text-gray-400">LLM 可主动调用记忆工具</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Step 1 -->
+            <!-- Install Command -->
             <div class="mb-12">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="step-number">1</div>
-                    <h3 class="text-xl font-semibold">安装 MemoryX Skill</h3>
-                </div>
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">1</span>
+                    给 Agent 发送安装命令
+                </h3>
                 
-                <div class="code-block rounded-xl p-6 ml-12">
+                <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500">终端</span>
-                        <button onclick="copyCode('pip')" class="text-sm text-purple-400 hover:text-purple-300">复制</button>
+                        <span class="text-sm text-gray-500">复制给 Agent 执行</span>
+                        <button onclick="copyCode('openclaw-install')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400">复制</button>
                     </div>
-                    <pre id="pip" class="text-sm text-gray-300 overflow-x-auto">pip install t0ken-memoryx</pre>
+                    <pre id="openclaw-install" class="text-sm text-gray-300 overflow-x-auto">请帮我安装 MemoryX OpenClaw 插件：
+
+openclaw plugins install @t0ken.ai/memoryx-openclaw-plugin
+openclaw gateway restart
+
+安装完成后告诉我。</pre>
                 </div>
             </div>
 
-            <!-- Step 2 -->
+            <!-- Config -->
             <div class="mb-12">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="step-number">2</div>
-                    <h3 class="text-xl font-semibold">发送代码给您的 Agent</h3>
-                </div>
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">2</span>
+                    配置（可选）
+                </h3>
                 
-                <div class="ml-12 space-y-4">
-                    <!-- Claude -->
-                    <div class="code-block rounded-xl p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm text-gray-500">给 Claude / Cursor 的代码</span>
-                            <button onclick="copyCode('claude')" class="text-sm text-purple-400 hover:text-purple-300">复制</button>
-                        </div>
-                        <pre id="claude" class="text-sm text-gray-300 overflow-x-auto"><code>请帮我安装 memoryx 并初始化记忆系统：
-
-```bash
-pip install t0ken-memoryx
-```
-
-然后运行这段代码：
-
-```python
-from memoryx import connect_memory
-
-# 自动注册并连接记忆系统
-memory = connect_memory(agent_type="claude")
-
-# 存储我们的对话记忆
-memory.add("用户是Python开发者，喜欢简洁的代码风格")
-
-print("✅ 记忆系统已激活")
-```
-
-完成后告诉我你的 Agent ID。</code></pre>
+                <div class="code-block rounded-xl p-6 ml-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-gray-500">~/.openclaw/openclaw.json</span>
+                        <button onclick="copyCode('openclaw-config')" class="copy-btn px-3 py-1 rounded text-sm text-purple-400">复制</button>
                     </div>
+                    <pre id="openclaw-config" class="text-sm text-gray-300 overflow-x-auto">{
+  "plugins": {
+    "slots": {
+      "memory": "memoryx-openclaw-plugin"
+    },
+    "entries": {
+      "memoryx-openclaw-plugin": {
+        "enabled": true,
+        "config": {
+          "apiBaseUrl": "https://t0ken.ai/api"
+        }
+      },
+      "memory-core": { "enabled": false },
+      "memory-lancedb": { "enabled": false }
+    }
+  }
+}</pre>
+                </div>
+            </div>
 
-                    <!-- GPT -->
-                    <div class="code-block rounded-xl p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm text-gray-500">给 ChatGPT / OpenAI Agent 的代码</span>
-                            <button onclick="copyCode('gpt')" class="text-sm text-purple-400 hover:text-purple-300">复制</button>
-                        </div>
-                        <pre id="gpt" class="text-sm text-gray-300 overflow-x-auto"><code>请帮我设置记忆系统：
+            <!-- Function Calling Tools -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-sm">3</span>
+                    Function Calling 工具
+                </h3>
+                
+                <div class="ml-10 overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="text-left py-3 px-4 text-gray-400">工具</th>
+                                <th class="text-left py-3 px-4 text-gray-400">功能</th>
+                                <th class="text-left py-3 px-4 text-gray-400">触发场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-4"><code class="text-purple-400">memoryx_recall</code></td>
+                                <td class="py-3 px-4 text-gray-300">搜索记忆</td>
+                                <td class="py-3 px-4 text-gray-400">"你还记得我说过...?"</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-4"><code class="text-pink-400">memoryx_store</code></td>
+                                <td class="py-3 px-4 text-gray-300">保存记忆</td>
+                                <td class="py-3 px-4 text-gray-400">"记住这个..."</td>
+                            </tr>
+                            <tr class="border-b border-white/5">
+                                <td class="py-3 px-4"><code class="text-blue-400">memoryx_list</code></td>
+                                <td class="py-3 px-4 text-gray-300">列出记忆</td>
+                                <td class="py-3 px-4 text-gray-400">"你还知道关于我的什么?"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4"><code class="text-red-400">memoryx_forget</code></td>
+                                <td class="py-3 px-4 text-gray-300">删除记忆</td>
+                                <td class="py-3 px-4 text-gray-400">"忘掉这个..."</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
 
-1. 安装：pip install t0ken-memoryx
-2. 运行以下代码：
-
-from memoryx import connect_memory
-memory = connect_memory(agent_type="openai")
-memory.add("用户偏好记录在此处")
-print("记忆系统就绪")
-
-3. 告诉我你的 Agent ID</code></pre>
+    <!-- VS Code Tab Content -->
+    <section id="vscode" class="tab-content py-16 px-6">
+        <div class="max-w-5xl mx-auto">
+            <!-- What it does -->
+            <div class="mb-12 text-center">
+                <h2 class="text-2xl font-bold mb-4">VS Code 插件功能</h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-purple-400 text-2xl mb-2">💬</div>
+                        <h3 class="font-semibold mb-1">@memoryx</h3>
+                        <p class="text-sm text-gray-400">在 Chat 中直接使用</p>
                     </div>
-
-                    <!-- Generic -->
-                    <div class="code-block rounded-xl p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm text-gray-500">通用代码（任何 Agent）</span>
-                            <button onclick="copyCode('generic')" class="text-sm text-purple-400 hover:text-purple-300">复制</button>
-                        </div>
-                        <pre id="generic" class="text-sm text-gray-300 overflow-x-auto"><code>from memoryx import connect_memory
-
-# 自动注册，无需人工干预
-memory = connect_memory(agent_type="custom")
-
-# 开始存储记忆
-memory.add("任何需要记住的信息")
-
-# 检索记忆
-results = memory.search("关键词")</code></pre>
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-pink-400 text-2xl mb-2">🔄</div>
+                        <h3 class="font-semibold mb-1">自动同步</h3>
+                        <p class="text-sm text-gray-400">对话自动采集和召回</p>
+                    </div>
+                    <div class="feature-card rounded-xl p-4">
+                        <div class="text-blue-400 text-2xl mb-2">⚡</div>
+                        <h3 class="font-semibold mb-1">零配置</h3>
+                        <p class="text-sm text-gray-400">自动注册，开箱即用</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Step 3 -->
+            <!-- Install Command -->
             <div class="mb-12">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="step-number">3</div>
-                    <h3 class="text-xl font-semibold">完成！查看您的 Agents</h3>
-                </div>
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">1</span>
+                    给 Agent 发送安装命令
+                </h3>
                 
-                <div class="ml-12 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-xl p-6 border border-purple-500/20">
-                    <p class="text-gray-300 mb-4">
-                        Agent 会自动注册并返回 ID。您可以在管理后台查看：
-                    </p>
-                    
-                    <a href="/portal/" class="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors">
-                        进入管理后台
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14"/>
-                            <path d="m12 5 7 7-7 7"/>
-                        </svg>
-                    </a>
+                <div class="code-block rounded-xl p-6 ml-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-gray-500">复制给 Agent 执行</span>
+                        <button onclick="copyCode('vscode-install')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                    </div>
+                    <pre id="vscode-install" class="text-sm text-gray-300 overflow-x-auto">请帮我安装 MemoryX VS Code 插件：
+
+curl -fsSL https://t0ken.ai/install-vscode.sh | bash
+
+安装完成后告诉我。</pre>
+                </div>
+            </div>
+
+            <!-- Usage -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">2</span>
+                    使用方式
+                </h3>
+                
+                <div class="code-block rounded-xl p-6 ml-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-gray-500">在 VS Code Chat 中 (Cmd/Ctrl + Shift + I)</span>
+                        <button onclick="copyCode('vscode-usage')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                    </div>
+                    <pre id="vscode-usage" class="text-sm text-gray-300 overflow-x-auto">@memoryx 帮我写一个登录函数
+
+# 可用命令：
+@memoryx /search 认证      # 搜索记忆
+@memoryx /list             # 列出最近记忆
+@memoryx /remember         # 手动保存对话
+@memoryx /clear            # 清除所有记忆</pre>
+                </div>
+            </div>
+
+            <!-- Example -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">3</span>
+                    效果示例
+                </h3>
+                
+                <div class="ml-10 bg-white/5 rounded-xl p-6 border border-white/10">
+                    <div class="space-y-4">
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm">👤</div>
+                            <div class="flex-1">
+                                <p class="text-gray-300">@memoryx 帮我写一个登录函数</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm">🧠</div>
+                            <div class="flex-1 bg-white/5 rounded-lg p-4">
+                                <p class="text-purple-400 text-sm mb-2">💡 相关记忆：</p>
+                                <ul class="text-sm text-gray-300 space-y-1">
+                                    <li>• [preference] 用户偏好 JWT 认证</li>
+                                    <li>• [fact] 项目使用 TypeScript</li>
+                                </ul>
+                                <p class="text-green-400 text-sm mt-3">✅ 对话已采集 (5 条消息在队列中)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Install -->
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">4</span>
+                    手动安装（备选）
+                </h3>
+                
+                <div class="code-block rounded-xl p-6 ml-10">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm text-gray-500">从 VSIX 文件安装</span>
+                        <button onclick="copyCode('vscode-manual')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                    </div>
+                    <pre id="vscode-manual" class="text-sm text-gray-300 overflow-x-auto"># 下载 .vsix 文件后：
+code --install-extension memoryx-vscode-1.0.0.vsix
+
+# 或者在 VS Code 中：
+# Extensions → "..." 菜单 → Install from VSIX</pre>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- How it Works -->
-    <section id="how-it-works" class="py-16 px-6 border-t border-white/5">
-        <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">工作原理</h2>
-                <p class="text-gray-400">机器指纹技术确保隐私与协作的完美平衡</p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Feature 1 -->
-                <div class="feature-card rounded-xl p-6">
-                    <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
-                            <path d="m9 12 2 2 4-4"/>
-                        </svg>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold text-white mb-2">自动识别机器</h3>
-                    
-                    <p class="text-gray-400 text-sm">
-                        基于硬件信息生成唯一指纹，无需人工配置。同一台机器自动识别。
-                    </p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="feature-card rounded-xl p-6">
-                    <div class="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                        </svg>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold text-white mb-2">Agents 自动协作</h3>
-                    
-                    <p class="text-gray-400 text-sm">
-                        Claude、GPT、本地模型共享同一记忆池。一个 Agent 学到的，所有 Agent 都知道。
-                    </p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="feature-card rounded-xl p-6">
-                    <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                    </div>
-                    
-                    <h3 class="text-lg font-semibold text-white mb-2">完全隐私隔离</h3>
-                    
-                    <p class="text-gray-400 text-sm">
-                        不同机器完全隔离。您的数据永远不会泄露给其他用户。
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Architecture Diagram -->
     <section class="py-16 px-6 border-t border-white/5">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">架构示意</h2>
+                <h2 class="text-3xl font-bold mb-4">工作原理</h2>
+                <p class="text-gray-400">所有插件共享同一后端，记忆自动同步</p>
             </div>
 
             <div class="bg-white/5 rounded-2xl p-8 border border-white/10">
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- User A Machine -->
-                    <div class="text-center">
-                        <div class="inline-block px-4 py-2 rounded-lg bg-purple-500/20 text-purple-400 text-sm mb-4">
-                            您的 MacBook Pro
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                    <!-- Plugins -->
+                    <div class="text-center space-y-4">
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">🐚 OpenClaw</p>
                         </div>
-                        
-                        <div class="space-y-3">
-                            <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                                <div class="flex items-center justify-center gap-2 text-gray-300">
-                                    <span>🤖 Claude</span>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                                <div class="flex items-center justify-center gap-2 text-gray-300">
-                                    <span>🤖 ChatGPT</span>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                                <div class="flex items-center justify-center gap-2 text-gray-300">
-                                    <span>🤖 本地模型</span>
-                                </div>
-                            </div>
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">💻 VS Code</p>
                         </div>
-                        
-                        <div class="mt-4 p-4 rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
-                            <p class="text-sm text-purple-300">共享记忆池</p>
-                            <p class="text-xs text-gray-400 mt-1">Machine ID: a1b2c3d4</p>
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">🤖 MCP Server</p>
                         </div>
                     </div>
 
-                    <!-- User B Machine -->
+                    <!-- Arrow -->
+                    <div class="text-gray-500 text-2xl">→</div>
+
+                    <!-- MemoryX -->
                     <div class="text-center">
-                        <div class="inline-block px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm mb-4">
-                            其他人的电脑
-                        </div>
-                        
-                        <div class="space-y-3">
-                            <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                                <div class="flex items-center justify-center gap-2 text-gray-300">
-                                    <span>🤖 Claude</span>
-                                </div>
+                        <div class="p-6 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30">
+                            <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl">🧠</span>
                             </div>
+                            <p class="text-lg font-semibold text-white">MemoryX</p>
+                            <p class="text-sm text-gray-400">云端记忆存储</p>
                         </div>
-                        
-                        <div class="mt-4 p-4 rounded-lg bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30">
-                            <p class="text-sm text-blue-300">独立记忆池</p>
-                            <p class="text-xs text-gray-400 mt-1">Machine ID: e5f6g7h8</p>
-                            <p class="text-xs text-gray-500 mt-1">完全隔离，无法访问您的数据</p>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-gray-500 text-2xl">→</div>
+
+                    <!-- Features -->
+                    <div class="text-center space-y-4">
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">📊 自动分类</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">🔍 语义搜索</p>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                            <p class="text-gray-300">🔗 关联记忆</p>
                         </div>
                     </div>
                 </div>
@@ -354,14 +414,14 @@ results = memory.search("关键词")</code></pre>
     <!-- CTA -->
     <section class="py-16 px-6 border-t border-white/5">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-4">准备好让您的 Agents 协作了吗？</h2>
+            <h2 class="text-3xl font-bold mb-4">安装后查看管理后台</h2>
             
             <p class="text-gray-400 mb-8">
-                完全免费，无需信用卡，一行代码即可开始。
+                所有 Agent 的记忆数据都可以在管理后台查看和管理
             </p>
             
-            <a href="#quickstart" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-medium transition-all">
-                立即开始
+            <a href="/portal/" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-medium transition-all">
+                进入管理后台
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"/>
                     <path d="m12 5 7 7-7 7"/>
@@ -385,6 +445,19 @@ results = memory.search("关键词")</code></pre>
 
     <script>
         lucide.createIcons();
+        
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update buttons
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
         
         function copyCode(id) {
             const text = document.getElementById(id).textContent;
