@@ -304,7 +304,7 @@ Let me know when installation is complete.</pre>
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">3</span>
-                    效果示例
+                    <span data-i18n="agent.example">Example</span>
                 </h3>
                 
                 <div class="ml-10 bg-white/5 rounded-xl p-6 border border-white/10">
@@ -312,19 +312,19 @@ Let me know when installation is complete.</pre>
                         <div class="flex gap-3">
                             <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm">👤</div>
                             <div class="flex-1">
-                                <p class="text-gray-300">@memoryx 帮我写一个登录函数</p>
+                                <p class="text-gray-300">@memoryx Help me write a login function</p>
                             </div>
                         </div>
                         
                         <div class="flex gap-3">
                             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm">🧠</div>
                             <div class="flex-1 bg-white/5 rounded-lg p-4">
-                                <p class="text-purple-400 text-sm mb-2">💡 相关记忆：</p>
+                                <p class="text-purple-400 text-sm mb-2">💡 <span data-i18n="agent.relatedMemories">Related memories:</span></p>
                                 <ul class="text-sm text-gray-300 space-y-1">
-                                    <li>• [preference] 用户偏好 JWT 认证</li>
-                                    <li>• [fact] 项目使用 TypeScript</li>
+                                    <li>• [preference] <span data-i18n="agent.examplePref">User prefers JWT auth</span></li>
+                                    <li>• [fact] <span data-i18n="agent.exampleFact">Project uses TypeScript</span></li>
                                 </ul>
-                                <p class="text-green-400 text-sm mt-3">✅ 对话已采集 (5 条消息在队列中)</p>
+                                <p class="text-green-400 text-sm mt-3">✅ <span data-i18n="agent.conversationCollected">Conversation collected (5 messages in queue)</span></p>
                             </div>
                         </div>
                     </div>
@@ -335,19 +335,19 @@ Let me know when installation is complete.</pre>
             <div class="mb-12">
                 <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
                     <span class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-sm">4</span>
-                    手动安装（备选）
+                    <span data-i18n="agent.manualInstall">Manual Install (Alternative)</span>
                 </h3>
                 
                 <div class="code-block rounded-xl p-6 ml-10">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500">从 VSIX 文件安装</span>
-                        <button onclick="copyCode('vscode-manual')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400">复制</button>
+                        <span class="text-sm text-gray-500" data-i18n="agent.fromVsix">Install from VSIX file</span>
+                        <button onclick="copyCode('vscode-manual')" class="copy-btn px-3 py-1 rounded text-sm text-pink-400" data-i18n="agent.copy">Copy</button>
                     </div>
-                    <pre id="vscode-manual" class="text-sm text-gray-300 overflow-x-auto"># 下载 .vsix 文件后：
+                    <pre id="vscode-manual" class="text-sm text-gray-300 overflow-x-auto"># After downloading .vsix file:
 code --install-extension memoryx-vscode-1.0.0.vsix
 
-# 或者在 VS Code 中：
-# Extensions → "..." 菜单 → Install from VSIX</pre>
+# Or in VS Code:
+# Extensions → "..." menu → Install from VSIX</pre>
                 </div>
             </div>
         </div>
@@ -357,8 +357,8 @@ code --install-extension memoryx-vscode-1.0.0.vsix
     <section class="py-16 px-6 border-t border-white/5">
         <div class="max-w-5xl mx-auto">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold mb-4">工作原理</h2>
-                <p class="text-gray-400">所有插件共享同一后端，记忆自动同步</p>
+                <h2 class="text-3xl font-bold mb-4" data-i18n="agent.howItWorks">How It Works</h2>
+                <p class="text-gray-400" data-i18n="agent.howItWorksDesc">All plugins share the same backend, memories sync automatically</p>
             </div>
 
             <div class="bg-white/5 rounded-2xl p-8 border border-white/10">
@@ -386,7 +386,7 @@ code --install-extension memoryx-vscode-1.0.0.vsix
                                 <i data-lucide="brain" class="w-10 h-10 text-purple-400"></i>
                             </div>
                             <p class="text-lg font-semibold text-white">MemoryX</p>
-                            <p class="text-sm text-gray-400">云端记忆存储</p>
+                            <p class="text-sm text-gray-400" data-i18n="agent.cloudStorage">Cloud Memory Storage</p>
                         </div>
                     </div>
 
@@ -396,13 +396,13 @@ code --install-extension memoryx-vscode-1.0.0.vsix
                     <!-- Features -->
                     <div class="text-center space-y-4">
                         <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                            <p class="text-gray-300">📊 自动分类</p>
+                            <p class="text-gray-400" data-i18n="agent.autoClassify">📊 Auto Classify</p>
                         </div>
                         <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                            <p class="text-gray-300">🔍 语义搜索</p>
+                            <p class="text-gray-400" data-i18n="agent.semanticSearch">🔍 Semantic Search</p>
                         </div>
                         <div class="bg-white/5 rounded-lg p-4 border border-white/10">
-                            <p class="text-gray-300">🔗 关联记忆</p>
+                            <p class="text-gray-400" data-i18n="agent.linkedMemories">🔗 Linked Memories</p>
                         </div>
                     </div>
                 </div>
@@ -413,14 +413,14 @@ code --install-extension memoryx-vscode-1.0.0.vsix
     <!-- CTA -->
     <section class="py-16 px-6 border-t border-white/5">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-4">安装后查看管理后台</h2>
+            <h2 class="text-3xl font-bold mb-4" data-i18n="agent.ctaTitle">View Dashboard After Installation</h2>
             
-            <p class="text-gray-400 mb-8">
-                所有 Agent 的记忆数据都可以在管理后台查看和管理
+            <p class="text-gray-400 mb-8" data-i18n="agent.ctaDesc">
+                All Agent memory data can be viewed and managed in the dashboard
             </p>
             
             <a href="/portal/" class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-medium transition-all">
-                进入管理后台
+                <span data-i18n="agent.goToDashboard">Go to Dashboard</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M5 12h14"/>
                     <path d="m12 5 7 7-7 7"/>
@@ -432,11 +432,11 @@ code --install-extension memoryx-vscode-1.0.0.vsix
     <!-- Footer -->
     <footer class="border-t border-white/10 py-8 px-6">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-gray-500 text-sm">© 2026 MemoryX. 保留所有权利。</p>
+            <p class="text-gray-500 text-sm">© 2026 MemoryX. <span data-i18n="agent.allRightsReserved">All rights reserved.</span></p>
             
             <div class="flex items-center gap-6">
-                <a href="/privacy.html" class="text-sm text-gray-500 hover:text-gray-400">隐私政策</a>
-                <a href="/terms.html" class="text-sm text-gray-500 hover:text-gray-400">使用条款</a>
+                <a href="/privacy.html" class="text-sm text-gray-500 hover:text-gray-400" data-i18n="footer.privacy">Privacy Policy</a>
+                <a href="/terms.html" class="text-sm text-gray-500 hover:text-gray-400" data-i18n="footer.terms">Terms of Service</a>
                 <a href="https://github.com/t0ken-ai/MemoryX" class="text-sm text-gray-500 hover:text-gray-400">GitHub</a>
             </div>
         </div>
@@ -465,7 +465,8 @@ code --install-extension memoryx-vscode-1.0.0.vsix
             // Show feedback
             const btn = event.target;
             const originalText = btn.textContent;
-            btn.textContent = '已复制!';
+            const copiedText = getCurrentLanguage() === 'zh' ? '已复制!' : 'Copied!';
+            btn.textContent = copiedText;
             setTimeout(() => {
                 btn.textContent = originalText;
             }, 2000);
