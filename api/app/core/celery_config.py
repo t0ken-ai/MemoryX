@@ -32,13 +32,17 @@ celery_app.conf.update(
     task_default_queue="memory_free",
 )
 
-celery_app.conf.task_queues = {
-    "memory_pro": {
+celery_app.conf.task_queues = [
+    {
+        "name": "memory_pro",
         "exchange": "memory_pro",
         "routing_key": "memory_pro",
+        "priority": 10,
     },
-    "memory_free": {
+    {
+        "name": "memory_free",
         "exchange": "memory_free",
         "routing_key": "memory_free",
+        "priority": 1,
     },
-}
+]

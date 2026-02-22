@@ -14,6 +14,18 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 router = APIRouter(prefix="/subscription", tags=["subscription"])
 
+
+def safe_int_user_id(user_id) -> int:
+    """安全地将 user_id 转换为整数"""
+    if user_id is None:
+        raise ValueError("user_id is None")
+    if isinstance(user_id, int):
+        return user_id
+    try:
+        return int(str(user_id))
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid user_id format: {user_id}") from e
+
 if settings.stripe_secret_key:
     stripe.api_key = settings.stripe_secret_key
 
@@ -196,13 +208,16 @@ async def stripe_webhook(
         user_id = session.get("metadata", {}).get("user_id")
         
         if user_id:
-            user = db.query(User).filter(User.id == int(user_id)).first()
-            if user:
-                user.subscription_tier = SubscriptionTier.PRO
-                user.stripe_subscription_id = session.get("subscription")
-                user.subscription_status = "active"
-                db.commit()
-                logger.info(f"User {user_id} upgraded to PRO")
+            try:
+                user = db.query(User).filter(User.id == safe_int_user_id(user_id)).first()
+                if user:
+                    user.subscription_tier = SubscriptionTier.PRO
+                    user.stripe_subscription_id = session.get("subscription")
+                    user.subscription_status = "active"
+                    db.commit()
+                    logger.info(f"User {user_id} upgraded to PRO")
+            except (ValueError, TypeError) as e:
+                logger.error(f"Invalid user_id in webhook: {user_id}, error: {e}")
     
     elif event["type"] == "customer.subscription.updated":
         subscription = event["data"]["object"]

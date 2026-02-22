@@ -16,6 +16,7 @@ from app.services.memory_queue import (
     batch_add_memory_task,
     get_queue_for_tier
 )
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,25 @@ class QuotaInfo(BaseModel):
     remaining_memories: int
 
 
+def get_effective_tier(user: User) -> SubscriptionTier:
+    """
+    获取用户有效的订阅层级
+    
+    如果 Pro 订阅已过期，返回 FREE
+    """
+    if user.subscription_tier == SubscriptionTier.PRO:
+        # 检查订阅是否过期
+        if user.subscription_end:
+            if user.subscription_end < datetime.utcnow():
+                # 订阅已过期，降级为 FREE
+                return SubscriptionTier.FREE
+        elif user.subscription_current_period_end:
+            # Stripe 订阅检查
+            if user.subscription_current_period_end < int(datetime.utcnow().timestamp()):
+                return SubscriptionTier.FREE
+    return user.subscription_tier
+
+
 def get_current_user_with_quota(
     x_api_key: str = Header(None), 
     db: Session = Depends(get_db)
@@ -84,9 +104,12 @@ def get_current_user_with_quota(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
+    # 获取有效订阅层级（检查过期）
+    effective_tier = get_effective_tier(user)
+    
     quota = get_or_create_quota(db, user.id)
     
-    return user.id, user.subscription_tier, quota, api_key
+    return user.id, effective_tier, quota, api_key
 
 
 @router.post("/memories", response_model=dict)

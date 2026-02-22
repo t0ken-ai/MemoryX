@@ -9,7 +9,8 @@ setup(
     author="MemoryX Team",
     author_email="support@t0ken.ai",
     url="https://t0ken.ai",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     python_requires=">=3.7",
     classifiers=[
         "Development Status :: 4 - Beta",

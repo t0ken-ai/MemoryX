@@ -10,12 +10,141 @@ import time
 import json
 from typing import Dict, Any, List, Optional
 from celery import shared_task
+import httpx
 
 from app.core.celery_config import celery_app
 from app.services.memory_core.graph_memory_service import graph_memory_service
 from app.core.database import SubscriptionTier
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
+settings = get_settings()
+
+
+SENSITIVE_FILTER_PROMPT = """请将以下内容中的敏感信息替换为[已过滤]：
+
+必须替换以下类型：
+1. 银行卡卡号：任何长度的银行卡号（不限制位数，如62220000111122223333、4532123456789012等）
+2. 密码：密码后面跟的内容（如"密码是abc123"替换为"密码是[已过滤]"）
+3. 身份证号码：如110101199001011234、420123198512125678等18位中国身份证号
+4. 社保号码：如123-45-6789等社会保险号码
+5. 护照号码：如GB1234567、E12345678等护照号码
+6. 驾驶证号码：驾驶证编号
+
+不要替换以下内容：
+- 姓名（如张三、李四、John）
+- 地址（如北京市朝阳区、New York）
+- 手机号码（如13812345678、+1234567890）
+- 电子邮箱
+
+原始内容：
+{content}
+
+请严格按以下 JSON 格式返回：
+{{"has_sensitive": true或false, "filtered_content": "替换敏感信息后的内容", "sensitive_count": 数字}}"""
+
+
+CONVERSATION_SUMMARY_PROMPT = """请对以下内容进行总结。
+
+要求：
+1. 保留所有重要的事实信息（用户偏好、个人情况、工作信息等）
+2. 保留具体的时间、地点、人物、事件
+3. 去除对话中的寒暄、重复、无关内容
+4. 保持时间顺序，用简洁的语言描述
+5. 不要添加任何解释或分析，只做总结
+
+内容：
+{content}
+
+请直接返回总结内容，不要包含任何其他文字。"""
+
+
+async def summarize_conversation(content: str) -> str:
+    """使用 LLM 总结对话内容"""
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            response = await client.post(
+                f"{settings.ollama_base_url}/v1/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "model": settings.llm_model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "你是一个对话总结助手。请简洁地总结对话内容，保留所有重要事实，去除无关信息。"
+                        },
+                        {
+                            "role": "user",
+                            "content": CONVERSATION_SUMMARY_PROMPT.format(content=content)
+                        }
+                    ],
+                    "temperature": 0.3,
+                    "max_tokens": 2000
+                }
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"LLM summarize failed: {response.status_code} - {response.text}")
+                return content
+            
+            data = response.json()
+            summary = data.get("choices", [{}])[0].get("message", {}).get("content", content)
+            
+            logger.info(f"Summarized: {len(content)} chars -> {len(summary)} chars")
+            return summary
+            
+    except Exception as e:
+        logger.error(f"LLM summarize error: {e}")
+        return content
+
+
+async def filter_sensitive_with_llm(content: str) -> Dict[str, Any]:
+    """使用 LLM 过滤敏感信息"""
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.post(
+                f"{settings.ollama_base_url}/v1/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "model": settings.llm_model,
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "你是一个敏感信息识别助手。请分析内容，识别并替换所有敏感信息。只返回JSON格式结果。"
+                        },
+                        {
+                            "role": "user",
+                            "content": SENSITIVE_FILTER_PROMPT.format(content=content)
+                        }
+                    ],
+                    "temperature": 0.1,
+                    "response_format": {"type": "json_object"}
+                }
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"LLM filter failed: {response.status_code} - {response.text}")
+                return {"has_sensitive": False, "filtered_content": content, "sensitive_count": 0}
+            
+            data = response.json()
+            llm_response = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+            
+            result = json.loads(llm_response)
+            filtered_content = result.get("filtered_content", content)
+            sensitive_count = filtered_content.count("[已过滤]") if filtered_content else 0
+            
+            return {
+                "has_sensitive": result.get("has_sensitive", False),
+                "filtered_content": filtered_content,
+                "sensitive_count": sensitive_count
+            }
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"LLM response parse failed: {e}")
+        return {"has_sensitive": False, "filtered_content": content, "sensitive_count": 0}
+    except Exception as e:
+        logger.error(f"LLM filter error: {e}")
+        return {"has_sensitive": False, "filtered_content": content, "sensitive_count": 0}
 
 
 def get_queue_for_tier(tier: SubscriptionTier) -> str:
@@ -98,10 +227,37 @@ def add_memory_task(
     )
     
     try:
+        # 检查是否是对话流（需要先总结）
+        needs_summary = metadata and metadata.get('needs_summary', False) if metadata else False
+        
+        if needs_summary:
+            # 对话流处理：先总结，再过滤敏感信息
+            logger.info(f"[ADD_MEMORY] Conversation flow detected, processing summary and filter")
+            
+            # Step 1: 总结对话
+            summary = run_async(summarize_conversation(content))
+            logger.info(f"[ADD_MEMORY] Summarized: {len(content)} -> {len(summary)} chars")
+            
+            # Step 2: 过滤敏感信息
+            filter_result = run_async(filter_sensitive_with_llm(summary))
+            if filter_result.get('has_sensitive'):
+                logger.info(f"[ADD_MEMORY] Filtered {filter_result.get('sensitive_count', 0)} sensitive items")
+            
+            final_content = filter_result.get('filtered_content', summary)
+            
+            # 更新 metadata，移除 needs_summary 标记
+            if metadata:
+                metadata['summarized'] = True
+                metadata['original_length'] = len(content)
+                metadata['summary_length'] = len(summary)
+        else:
+            # 普通记忆：直接使用
+            final_content = content
+        
         result = run_async(
             graph_memory_service.add_memory(
                 user_id=user_id,
-                content=content,
+                content=final_content,
                 metadata=metadata,
                 skip_judge=skip_judge,
                 api_key_id=api_key_id

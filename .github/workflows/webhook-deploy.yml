@@ -5,13 +5,15 @@
 # 
 # 输入参数：
 #   - deploy_type: 部署类型 (alpha/release)
-#   - image: Docker 镜像地址 (可选)
+#   - image: Docker 镜像地址
 #   - sha: Git commit SHA
 #   - ref: Git ref
+#   - update_celery: 是否同时更新 Celery Worker
 #
 # 服务器端处理：
 #   - alpha → 31.66 测试环境
 #   - release → 31.65 生产环境
+#   - update_celery=true → 同时部署 Celery Worker
 
 name: Webhook Deploy
 
@@ -23,7 +25,7 @@ on:
         required: true
         type: string
       image:
-        description: 'Docker image to deploy (optional, for API only)'
+        description: 'Docker image to deploy'
         required: false
         type: string
         default: ''
@@ -37,6 +39,11 @@ on:
         required: false
         type: string
         default: ''
+      update_celery:
+        description: 'Whether to update Celery worker'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   trigger:
@@ -47,12 +54,14 @@ jobs:
         run: |
           DEPLOY_TYPE="${{ inputs.deploy_type }}"
           IMAGE="${{ inputs.image }}"
+          UPDATE_CELERY="${{ inputs.update_celery }}"
           
           echo "=========================================="
           echo "Triggering deployment webhook"
           echo "Type: $DEPLOY_TYPE"
           echo "Image: ${IMAGE:-N/A}"
           echo "SHA: ${{ inputs.sha }}"
+          echo "Update Celery: $UPDATE_CELERY"
           echo "=========================================="
           
           if [ -n "$IMAGE" ]; then
@@ -63,7 +72,8 @@ jobs:
                 "repository": "${{ github.repository }}",
                 "ref": "${{ inputs.ref }}",
                 "sha": "${{ inputs.sha }}",
-                "image": "'"$IMAGE"'"
+                "image": "'"$IMAGE"'",
+                "update_celery": '"$UPDATE_CELERY"'
               }' \
               -w "\nHTTP Status: %{http_code}\n" \
               -s
@@ -74,7 +84,8 @@ jobs:
                 "event": "${{ github.event_name }}",
                 "repository": "${{ github.repository }}",
                 "ref": "${{ inputs.ref }}",
-                "sha": "${{ inputs.sha }}"
+                "sha": "${{ inputs.sha }}",
+                "update_celery": '"$UPDATE_CELERY"'
               }' \
               -w "\nHTTP Status: %{http_code}\n" \
               -s

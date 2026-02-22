@@ -4,7 +4,6 @@ from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 import logging
-import httpx
 import json
 
 from app.core.database import (
@@ -34,98 +33,20 @@ class ConversationFlushRequest(BaseModel):
     messages: List[MessageItem] = Field(..., min_length=1, description="消息列表，每条包含 role、content、timestamp")
 
 
-class SensitiveFilterResult(BaseModel):
-    has_sensitive: bool
-    filtered_content: str
-    sensitive_count: int
-
-
-SENSITIVE_FILTER_PROMPT = """请将以下对话中的敏感信息替换为[已过滤]：
-
-必须替换以下类型：
-1. 银行卡卡号：任何长度的银行卡号（不限制位数，如62220000111122223333、4532123456789012等）
-2. 密码：密码后面跟的内容（如"密码是abc123"替换为"密码是[已过滤]"）
-3. 身份证号码：如110101199001011234、420123198512125678等18位中国身份证号
-4. 社保号码：如123-45-6789等社会保险号码
-5. 护照号码：如GB1234567、E12345678等护照号码
-6. 驾驶证号码：驾驶证编号
-
-不要替换以下内容：
-- 姓名（如张三、李四、John）
-- 地址（如北京市朝阳区、New York）
-- 手机号码（如13812345678、+1234567890）
-- 电子邮箱
-
-原始内容：
-{conversation}
-
-请严格按以下 JSON 格式返回：
-{{"has_sensitive": true或false, "safe_content": "替换敏感信息后的内容"}}"""
-
-
-async def filter_sensitive_with_llm(content: str) -> SensitiveFilterResult:
-    """使用 LLM 过滤敏感信息 - OpenAI 兼容 API"""
+def safe_int_user_id(user_id) -> int:
+    """安全地将 user_id 转换为整数"""
+    if user_id is None:
+        raise ValueError("user_id is None")
+    if isinstance(user_id, int):
+        return user_id
     try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                f"{settings.ollama_base_url}/v1/chat/completions",
-                headers={"Content-Type": "application/json"},
-                json={
-                    "model": settings.llm_model,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "你是一个敏感信息识别助手。请分析对话内容，识别并替换所有敏感信息。只返回JSON格式结果。"
-                        },
-                        {
-                            "role": "user",
-                            "content": SENSITIVE_FILTER_PROMPT.format(conversation=content)
-                        }
-                    ],
-                    "temperature": 0.1,
-                    "response_format": {"type": "json_object"}
-                }
-            )
-            
-            if response.status_code != 200:
-                logger.error(f"LLM filter failed: {response.status_code} - {response.text}")
-                return SensitiveFilterResult(
-                    has_sensitive=False,
-                    filtered_content=content,
-                    sensitive_count=0
-                )
-            
-            data = response.json()
-            llm_response = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
-            
-            result = json.loads(llm_response)
-            safe_content = result.get("safe_content", content)
-            sensitive_count = safe_content.count("[已过滤]") if safe_content else 0
-            
-            return SensitiveFilterResult(
-                has_sensitive=result.get("has_sensitive", False),
-                filtered_content=safe_content,
-                sensitive_count=sensitive_count
-            )
-            
-    except json.JSONDecodeError as e:
-        logger.error(f"LLM response parse failed: {e}")
-        return SensitiveFilterResult(
-            has_sensitive=False,
-            filtered_content=content,
-            sensitive_count=0
-        )
-    except Exception as e:
-        logger.error(f"LLM filter error: {e}")
-        return SensitiveFilterResult(
-            has_sensitive=False,
-            filtered_content=content,
-            sensitive_count=0
-        )
+        return int(str(user_id))
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"Invalid user_id format: {user_id}") from e
 
 
 def process_conversation_task(conversation_data: dict, api_key_id: int = None):
-    """后台任务：处理对话提取记忆 - 通过队列异步处理"""
+    """后台任务：快速入队，后续由 Celery worker 处理总结和过滤"""
     try:
         user_id = conversation_data["user_id"]
         messages = conversation_data["messages"]
@@ -133,36 +54,34 @@ def process_conversation_task(conversation_data: dict, api_key_id: int = None):
         from app.core.database import SessionLocal, User
         db = SessionLocal()
         try:
-            user = db.query(User).filter(User.id == int(user_id)).first()
+            user = db.query(User).filter(User.id == safe_int_user_id(user_id)).first()
             tier = user.subscription_tier if user else SubscriptionTier.FREE
         finally:
             db.close()
         
-        import asyncio
         import json
-        messages_json = json.dumps(messages, ensure_ascii=False, indent=2)
-        filter_result = asyncio.run(filter_sensitive_with_llm(messages_json))
         
-        if filter_result.has_sensitive:
-            logger.info(f"LLM filtered {filter_result.sensitive_count} sensitive items for user {user_id}")
+        # 直接入队原始对话，由 Celery worker 处理总结和过滤
+        messages_json = json.dumps(messages, ensure_ascii=False)
+        logger.info(f"[Conversation] Queued for user {user_id}: {len(messages)} messages, {len(messages_json)} chars")
         
         queue = get_queue_for_tier(tier)
         task = add_memory_task.apply_async(
-            args=[user_id, filter_result.filtered_content, {
+            args=[user_id, messages_json, {
                 "conversation_id": conversation_data.get("conversation_id"),
                 "message_count": len(messages),
-                "has_sensitive": filter_result.has_sensitive,
                 "source": "conversation_flush",
-                "project_id": conversation_data.get("project_id", "default")
+                "project_id": conversation_data.get("project_id", "default"),
+                "needs_summary": True  # 标记需要先总结
             }, False, api_key_id],
             queue=queue
         )
         
-        logger.info(f"Queued memory task for user {user_id}: {task.id} in queue {queue}")
-        return {"task_id": task.id, "status": "queued"}
+        logger.info(f"[Conversation] Task queued: {task.id}")
+        return {"task_id": task.id, "status": "queued", "message_count": len(messages)}
         
     except Exception as e:
-        logger.error(f"Failed to process conversation: {e}")
+        logger.error(f"[Conversation] Failed to queue: {e}")
         raise
 
 
@@ -238,24 +157,21 @@ async def realtime_message(
     db: Session = Depends(get_db)
 ):
     """
-    实时消息接收 - 立即处理
+    实时消息接收 - 立即入队处理
     
-    用于高优先级消息，绕过缓冲直接处理
+    用于高优先级消息，快速入队由 Celery worker 处理
     """
     user_id, tier, quota, api_key_id = user_data
     
     if not message.content or len(message.content) < 2:
         return {"status": "skipped", "reason": "content_too_short"}
     
-    filter_result = await filter_sensitive_with_llm(message.content)
-    
     queue = get_queue_for_tier(tier)
     task = add_memory_task.apply_async(
-        args=[str(user_id), filter_result.filtered_content, {
+        args=[str(user_id), message.content, {
             "role": message.role,
             "tokens": message.tokens,
-            "source": "realtime",
-            "has_sensitive": filter_result.has_sensitive
+            "source": "realtime"
         }, False, api_key_id],
         queue=queue
     )
@@ -264,6 +180,5 @@ async def realtime_message(
     
     return {
         "status": "queued",
-        "task_id": task.id,
-        "has_sensitive": filter_result.has_sensitive
+        "task_id": task.id
     }

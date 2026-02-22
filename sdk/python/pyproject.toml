@@ -35,5 +35,5 @@ Repository = "https://github.com/CensorKo/MemoryX"
 Issues = "https://github.com/CensorKo/MemoryX/issues"
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["memoryx*"]

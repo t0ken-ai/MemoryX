@@ -1,0 +1,43 @@
+{
+  "name": "@t0ken.ai/memoryx-sdk",
+  "version": "1.0.0",
+  "description": "MemoryX Node.js SDK - 让 AI Agents 轻松拥有持久记忆",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "memory",
+    "ai",
+    "agent",
+    "llm",
+    "cognitive",
+    "memoryx",
+    "mcp"
+  ],
+  "author": "MemoryX Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CensorKo/MemoryX"
+  },
+  "homepage": "https://t0ken.ai",
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "js-tiktoken": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}

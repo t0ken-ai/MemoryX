@@ -13,6 +13,12 @@
 #   - static/** (静态文件变更)
 #   - Dockerfile.api (Docker 配置变更)
 #
+# Celery 更新判断：
+#   - api/app/services/memory_queue.py (任务定义)
+#   - api/app/services/memory_core/*.py (任务核心逻辑)
+#   - api/app/core/celery_config.py (Celery 配置)
+#   - api/requirements.txt (Python 依赖)
+#
 # 镜像仓库：ghcr.io/t0ken-ai/memoryx-api
 
 name: Build API
@@ -36,6 +42,11 @@ on:
         options:
           - release
           - alpha
+      force_celery:
+        description: 'Force update Celery worker'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -43,9 +54,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.tag.outputs.tag }}
+      update_celery: ${{ steps.celery-check.outputs.update }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,6 +86,44 @@ jobs:
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Image tag: $TAG"
 
+      - name: Check if Celery needs update
+        id: celery-check
+        run: |
+          # Celery 相关文件路径
+          CELERY_PATHS=(
+            "api/app/services/memory_queue.py"
+            "api/app/services/memory_core/"
+            "api/app/core/celery_config.py"
+            "api/requirements.txt"
+          )
+          
+          UPDATE_CELERY="${{ inputs.force_celery || 'false' }}"
+          
+          # 如果不是强制更新，检查文件变更
+          if [ "$UPDATE_CELERY" != "true" ] && [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            # 获取变更的文件
+            if [ "${{ github.event_name }}" == "push" ]; then
+              CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+            else
+              CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} 2>/dev/null || echo "")
+            fi
+            
+            echo "Changed files:"
+            echo "$CHANGED_FILES"
+            
+            # 检查是否有 Celery 相关文件变更
+            for path in "${CELERY_PATHS[@]}"; do
+              if echo "$CHANGED_FILES" | grep -q "^$path"; then
+                UPDATE_CELERY="true"
+                echo "Celery file changed: $path"
+                break
+              fi
+            done
+          fi
+          
+          echo "update=$UPDATE_CELERY" >> $GITHUB_OUTPUT
+          echo "Update Celery: $UPDATE_CELERY"
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
@@ -97,6 +149,7 @@ jobs:
       image: ghcr.io/t0ken-ai/memoryx-api:${{ needs.build.outputs.image_tag }}
       sha: ${{ github.sha }}
       ref: ${{ github.ref }}
+      update_celery: ${{ needs.build.outputs.update_celery == 'true' }}
     secrets: inherit
 
   deploy-alpha:
@@ -109,4 +162,5 @@ jobs:
       image: ghcr.io/t0ken-ai/memoryx-api:alpha
       sha: ${{ github.sha }}
       ref: ${{ github.ref }}
+      update_celery: ${{ needs.build.outputs.update_celery == 'true' }}
     secrets: inherit

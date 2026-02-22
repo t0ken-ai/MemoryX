@@ -78,12 +78,12 @@ def get_cursor_config(key_id: int, current_user: User = Depends(get_current_user
     
     return {
         "mcpServers": {
-            "openmemoryx": {
-                "command": "python3",
-                "args": ["-m", "openmemoryx_mcp"],
+            "memoryx": {
+                "command": "npx",
+                "args": ["-y", "@t0ken/memoryx-mcp-server"],
                 "env": {
-                    "OPENMEMORYX_API_KEY": "YOUR_API_KEY",
-                    "OPENMEMORYX_URL": "http://192.168.31.65:8000"
+                    "MEMORYX_API_KEY": key.api_key,
+                    "MEMORYX_URL": "https://t0ken.ai/api"
                 }
             }
         }

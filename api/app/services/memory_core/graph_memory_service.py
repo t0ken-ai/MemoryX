@@ -1001,6 +1001,12 @@ class GraphMemoryService:
             return False
     
     def delete_memory_complete(self, user_id: str, vector_id: str) -> Dict[str, bool]:
+        """
+        完整删除记忆 - 从所有存储中真删除
+        
+        删除顺序：Qdrant → Neo4j → PostgreSQL（最后删除主记录）
+        这样即使中途失败，主记录仍在，可以重试
+        """
         results = {
             "qdrant": False,
             "postgres": False,
@@ -1009,33 +1015,113 @@ class GraphMemoryService:
         
         entities = []
         relations = []
+        fact_id = None
         
+        # Step 1: 先获取 Fact 数据（用于 Neo4j 删除）
         db = SessionLocal()
         try:
             fact = db.query(Fact).filter(Fact.vector_id == vector_id, Fact.user_id == int(user_id)).first()
             if fact:
                 entities = fact.entities or []
                 relations = fact.relations or []
-                db.delete(fact)
-                db.commit()
-                results["postgres"] = True
-                logger.info(f"Deleted fact from PostgreSQL: {vector_id}")
+                fact_id = fact.id
             else:
                 logger.warning(f"Fact not found in PostgreSQL: {vector_id}")
+                # 即使 PostgreSQL 没找到，也尝试删除 Qdrant
         except Exception as e:
-            logger.error(f"Failed to delete from PostgreSQL: {e}")
-            db.rollback()
+            logger.error(f"Failed to query fact: {e}")
         finally:
             db.close()
         
+        # Step 2: 删除 Qdrant（向量搜索）
+        results["qdrant"] = self.delete_from_qdrant(user_id, vector_id)
+        if results["qdrant"]:
+            logger.info(f"Deleted from Qdrant: {vector_id}")
+        else:
+            logger.warning(f"Failed to delete from Qdrant: {vector_id}")
+        
+        # Step 3: 删除 Neo4j（图关系）- 真删除实体和关系
         if entities or relations:
-            self.delete_from_neo4j(user_id, entities, relations)
+            self.delete_from_neo4j_complete(user_id, entities, relations)
             results["neo4j"] = True
             logger.info(f"Deleted from Neo4j: {len(entities)} entities, {len(relations)} relations")
         
-        results["qdrant"] = self.delete_from_qdrant(user_id, vector_id)
+        # Step 4: 最后删除 PostgreSQL（主记录）
+        if fact_id:
+            db = SessionLocal()
+            try:
+                fact = db.query(Fact).filter(Fact.id == fact_id).first()
+                if fact:
+                    db.delete(fact)
+                    db.commit()
+                    results["postgres"] = True
+                    logger.info(f"Deleted fact from PostgreSQL: id={fact_id}, vector_id={vector_id}")
+            except Exception as e:
+                logger.error(f"Failed to delete from PostgreSQL: {e}")
+                db.rollback()
+            finally:
+                db.close()
         
         return results
+    
+    def delete_from_neo4j_complete(self, user_id: str, entities: List[Dict], relations: List[Dict]):
+        """
+        完全删除 Neo4j 中的实体和关系 - 不保留孤立节点
+        """
+        if not self.neo4j_driver:
+            logger.warning("Neo4j not connected, skipping graph deletion")
+            return
+        
+        with self.neo4j_driver.session() as session:
+            # 先删除所有关系
+            for relation in relations:
+                source = relation.get("source", "")
+                target = relation.get("target", "")
+                relation_type = relation.get("relation", "RELATED_TO")
+                
+                if not source or not target:
+                    continue
+                
+                relation_type_safe = relation_type.upper().replace(" ", "_")
+                relation_type_safe = "".join(c for c in relation_type_safe if c.isalnum() or c == "_")
+                
+                if not relation_type_safe:
+                    relation_type_safe = "RELATED_TO"
+                
+                try:
+                    # 删除所有匹配的关系（不管方向）
+                    query = f"""
+                    MATCH (s {{name: $source, user_id: $user_id}})-[r:{relation_type_safe}]-(t {{name: $target, user_id: $user_id}})
+                    DELETE r
+                    """
+                    session.run(query, source=source, target=target, user_id=user_id)
+                    logger.debug(f"Deleted relation: {source} --{relation_type_safe}-- {target}")
+                except Exception as e:
+                    logger.error(f"Failed to delete relation {source}<->{target}: {e}")
+            
+            # 然后删除所有实体（真删除，不管是否有其他关系）
+            for entity in entities:
+                entity_name = entity.get("name", "")
+                if not entity_name:
+                    continue
+                
+                try:
+                    # 先删除该实体的所有关系
+                    delete_rels_query = """
+                    MATCH (e {name: $name, user_id: $user_id})-[r]-()
+                    DELETE r
+                    """
+                    session.run(delete_rels_query, name=entity_name, user_id=user_id)
+                    
+                    # 再删除实体本身
+                    delete_entity_query = """
+                    MATCH (e {name: $name, user_id: $user_id})
+                    DELETE e
+                    """
+                    session.run(delete_entity_query, name=entity_name, user_id=user_id)
+                    logger.debug(f"Deleted entity completely: {entity_name}")
+                except Exception as e:
+                    logger.error(f"Failed to delete entity {entity_name}: {e}")
     
     async def execute_memory_operations(self, user_id: str, memory_operations: List[Dict], existing_memories: List[Dict], metadata: Dict = None) -> Dict[str, Any]:
         import uuid
@@ -1149,8 +1235,8 @@ class GraphMemoryService:
                         if vector_id:
                             self.delete_from_qdrant(user_id, vector_id)
                         
-                        if relations_to_delete:
-                            self.delete_from_neo4j(user_id, entities_to_delete, relations_to_delete)
+                        if entities_to_delete or relations_to_delete:
+                            self.delete_from_neo4j_complete(user_id, entities_to_delete, relations_to_delete)
                         
                         try:
                             if fact_record:
@@ -1606,19 +1692,63 @@ class GraphMemoryService:
         qdrant_time = asyncio.get_event_loop().time() - start_time - extraction_time - neo4j_time - embed_time
         logger.info(f"Qdrant batch write: {qdrant_time:.2f}s")
         
+        # 写入 PostgreSQL Fact 表（之前缺失）
+        db = SessionLocal()
+        stored_facts = []
+        try:
+            for i, (content, memory_id) in enumerate(zip(contents, memory_ids)):
+                entities_i = extractions[i].get("entities", [])
+                relations_i = extractions[i].get("relations", [])
+                
+                fact_record = Fact(
+                    user_id=int(user_id) if user_id.isdigit() else 1,
+                    content=content,
+                    category="fact",
+                    importance="medium",
+                    vector_id=memory_id,
+                    entities=entities_i,
+                    relations=relations_i
+                )
+                db.add(fact_record)
+                stored_facts.append({
+                    "id": memory_id,
+                    "fact_id": None,  # flush 后填充
+                    "content": content,
+                    "entities": entities_i,
+                    "relations": relations_i,
+                    "event": "ADD"
+                })
+            
+            db.commit()
+            
+            # 更新 fact_id
+            for i, fact in enumerate(db.query(Fact).filter(Fact.vector_id.in_(memory_ids)).all()):
+                stored_facts[i]["fact_id"] = fact.id
+                
+            pg_time = asyncio.get_event_loop().time() - start_time - extraction_time - neo4j_time - embed_time - qdrant_time
+            logger.info(f"PostgreSQL batch write: {pg_time:.2f}s | facts={len(stored_facts)}")
+            
+        except Exception as e:
+            logger.error(f"PostgreSQL batch write failed: {e}")
+            db.rollback()
+            # 补偿删除 Qdrant 中已写入的数据
+            try:
+                from qdrant_client.models import PointIdsList
+                client.delete(
+                    collection_name=collection_name,
+                    points_selector=PointIdsList(points=memory_ids)
+                )
+                logger.warning(f"Compensated: deleted {len(memory_ids)} points from Qdrant")
+            except Exception as cleanup_error:
+                logger.error(f"Failed to cleanup Qdrant: {cleanup_error}")
+            raise
+        finally:
+            db.close()
+        
         total_time = asyncio.get_event_loop().time() - start_time
         logger.info(f"Batch add {len(contents)} memories: {total_time:.2f}s ({len(contents)/total_time:.1f} mem/s)")
         
-        return [
-            {
-                "id": memory_id,
-                "content": content,
-                "entities": extractions[i].get("entities", []),
-                "relations": extractions[i].get("relations", []),
-                "event": "ADD"
-            }
-            for i, (content, memory_id) in enumerate(zip(contents, memory_ids))
-        ]
+        return stored_facts
 
 
 graph_memory_service = GraphMemoryService()

@@ -1,0 +1,43 @@
+{
+  "name": "@t0ken/memoryx-mcp-server",
+  "version": "1.0.0",
+  "description": "MemoryX MCP Server for Cursor/VS Code/Claude Desktop",
+  "main": "dist/index.js",
+  "bin": {
+    "memoryx-mcp-server": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "memory",
+    "ai",
+    "llm",
+    "cursor",
+    "vscode"
+  ],
+  "author": "MemoryX Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^11.0.0",
+    "js-tiktoken": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/t0ken-ai/MemoryX.git",
+    "directory": "plugins/memoryx-mcp-server"
+  }
+}

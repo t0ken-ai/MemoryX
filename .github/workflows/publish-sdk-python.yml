@@ -1,25 +1,21 @@
-# Publish SDK to PyPI - 发布 SDK 到 PyPI
+# Publish Python SDK to PyPI - 发布 MemoryX Python SDK 到 PyPI
 #
-# 用途：发布 MemoryX SDK 到 PyPI
-# 
+# 用途：发布 MemoryX Python SDK 到 PyPI
+#
 # 触发条件：
-#   - push to main 且路径为 sdk/**
-#   - push tag sdk-v* (如 sdk-v1.0.0)
+#   - push tag sdk-python-v* (如 sdk-python-v1.0.0)
 #   - workflow_dispatch 手动触发
 #
-# SDK 目录：sdk/
+# SDK 目录：sdk/python/
 # 发布包名：t0ken-memoryx
 # PyPI 地址：https://pypi.org/project/t0ken-memoryx/
 
-name: Publish SDK to PyPI
+name: Publish Python SDK to PyPI
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'sdk/**'
     tags:
-      - 'sdk-v*'
+      - 'sdk-python-v*'
   workflow_dispatch:
 
 jobs:
@@ -41,7 +37,7 @@ jobs:
       
       - name: Check version and PyPI status
         id: check
-        working-directory: sdk
+        working-directory: sdk/python
         run: |
           LOCAL_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
           echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
@@ -51,14 +47,14 @@ jobs:
           pip index versions t0ken-memoryx 2>/dev/null || echo "Package may not exist yet"
       
       - name: Build package
-        working-directory: sdk
+        working-directory: sdk/python
         run: |
           python -m build
           ls -la dist/
           twine check dist/*
       
       - name: Publish to PyPI
-        working-directory: sdk
+        working-directory: sdk/python
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

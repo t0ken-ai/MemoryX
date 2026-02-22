@@ -1,0 +1,13 @@
+# Test files
+test*.ts
+test*.js
+
+# Development
+node_modules/
+*.log
+
+# Source (only dist is needed)
+src/
+
+# Config
+tsconfig.json

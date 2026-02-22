@@ -26,12 +26,12 @@ class Settings(BaseSettings):
         extra="ignore",
     )
     
-    database_url: str = "postgresql://memoryx:memoryx123@192.168.31.66:5432/memoryx"
+    database_url: str = "postgresql://memoryx:memoryx123@192.168.31.65:5432/memoryx"
     
-    valkey_host: str = "192.168.31.66"
+    valkey_host: str = "192.168.31.65"
     valkey_port: int = 6379
     valkey_password: Optional[str] = None
-    redis_url: str = "redis://192.168.31.66:6379/0"
+    redis_url: str = "redis://192.168.31.65:6379/0"
     
     secret_key: str = "your-secret-key-change-in-production"
     algorithm: str = "HS256"

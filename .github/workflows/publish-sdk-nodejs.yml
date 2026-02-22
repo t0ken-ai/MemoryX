@@ -1,0 +1,85 @@
+# Publish Node.js SDK to NPM - 发布 MemoryX Node.js SDK 到 NPM
+#
+# 用途：发布 MemoryX Node.js SDK 到 NPM
+# 
+# 触发条件：
+#   - push tag sdk-nodejs-v* (如 sdk-nodejs-v1.0.0)
+#   - workflow_dispatch 手动触发
+#
+# SDK 目录：sdk/nodejs/
+# 发布包名：@t0ken.ai/memoryx-sdk
+# NPM 地址：https://www.npmjs.com/package/@t0ken.ai/memoryx-sdk
+#
+# 功能：
+#   - MemoryX 客户端 SDK
+#   - 支持会话管理和记忆队列
+#   - 内置 flush 策略（realtime/batch/conversation）
+#   - 本地 SQLite 持久化
+#   - 指数退避重试和死信队列
+
+name: Publish Node.js SDK to NPM
+
+on:
+  push:
+    tags:
+      - 'sdk-nodejs-v*'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@t0ken.ai'
+      
+      - name: Install dependencies
+        working-directory: sdk/nodejs
+        run: npm ci
+      
+      - name: Build
+        working-directory: sdk/nodejs
+        run: npm run build
+      
+      - name: Run tests
+        working-directory: sdk/nodejs
+        run: npm test || echo "No tests configured"
+      
+      - name: Check package version
+        id: check
+        working-directory: sdk/nodejs
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $LOCAL_VERSION"
+          
+          NPM_VERSION=$(npm view @t0ken.ai/memoryx-sdk version 2>/dev/null || echo "not-published")
+          echo "NPM version: $NPM_VERSION"
+          
+          if [ "$LOCAL_VERSION" = "$NPM_VERSION" ]; then
+            echo "Version $LOCAL_VERSION already published"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Should publish $LOCAL_VERSION"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Publish to NPM
+        if: steps.check.outputs.should_publish == 'true'
+        working-directory: sdk/nodejs
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Skip publish
+        if: steps.check.outputs.should_publish == 'false'
+        run: echo "Version already published, skipping"
