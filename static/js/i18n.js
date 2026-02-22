@@ -116,7 +116,8 @@ const translations = {
       methodSendMemories: "Send memories (single/batch)",
       methodSearch: "Semantic search memories",
       methodList: "Get memory list",
-      methodDelete: "Delete memory"
+      methodDelete: "Delete memory",
+      methodGetTaskStatus: "Query async task status"
     },
     agent: {
       heroBadge: "Agent Auto Install",
@@ -334,7 +335,8 @@ const translations = {
       methodSendMemories: "发送记忆（单条/批量）",
       methodSearch: "语义搜索记忆",
       methodList: "获取记忆列表",
-      methodDelete: "删除记忆"
+      methodDelete: "删除记忆",
+      methodGetTaskStatus: "查询异步任务状态"
     },
     agent: {
       heroBadge: "Agent 自动安装",
