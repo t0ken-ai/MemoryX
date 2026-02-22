@@ -1,0 +1,98 @@
+{
+  "name": "memoryx-vscode",
+  "displayName": "MemoryX - AI Memory Assistant",
+  "description": "Persistent memory for your VS Code conversations. Auto-capture and recall context with @memoryx.",
+  "version": "1.0.0",
+  "publisher": "t0ken-ai",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "chatParticipants": [
+      {
+        "id": "memoryx",
+        "name": "memoryx",
+        "description": "MemoryX - AI Memory Assistant",
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "remember",
+            "description": "Save current conversation to memory"
+          },
+          {
+            "name": "search",
+            "description": "Search memories"
+          },
+          {
+            "name": "list",
+            "description": "List recent memories"
+          },
+          {
+            "name": "clear",
+            "description": "Clear all memories (requires confirmation)"
+          }
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "MemoryX",
+      "properties": {
+        "memoryx.apiUrl": {
+          "type": "string",
+          "default": "https://t0ken.ai/api",
+          "description": "MemoryX API URL"
+        },
+        "memoryx.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "MemoryX API Key (leave empty for auto-registration)"
+        },
+        "memoryx.autoCapture": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically capture conversation when @memoryx is mentioned"
+        },
+        "memoryx.autoRecall": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically search and display relevant memories"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "@t0ken.ai/memoryx-sdk": "file:../../sdk/nodejs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/t0ken-ai/MemoryX.git",
+    "directory": "plugins/memoryx-vscode-extension"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  }
+}
