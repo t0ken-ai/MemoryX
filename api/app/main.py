@@ -154,6 +154,14 @@ async def agent_register_guide():
             return f.read()
     return HTMLResponse(content="<h1>Agent Registration Guide</h1><p>Coming soon...</p>")
 
+@app.get("/sdk-guide", response_class=HTMLResponse)
+async def sdk_guide_page():
+    guide_html_path = f"{_static_base}/sdk-guide.html"
+    if os.path.exists(guide_html_path):
+        with open(guide_html_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return HTMLResponse(content="<h1>SDK Guide</h1><p>Coming soon...</p>")
+
 @app.get("/admin/my-machines", response_class=HTMLResponse)
 async def my_machines_page():
     machines_html_path = f"{_static_base}/my-machines.html"
