@@ -76,7 +76,7 @@
     "package": "vsce package"
   },
   "dependencies": {
-    "@t0ken.ai/memoryx-sdk": "file:../../sdk/nodejs"
+    "@t0ken.ai/memoryx-sdk": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -90,7 +90,6 @@
     "directory": "plugins/memoryx-vscode-extension"
   },
   "license": "MIT",
-  "icon": "icon.png",
   "galleryBanner": {
     "color": "#1e1e1e",
     "theme": "dark"
