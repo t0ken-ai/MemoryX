@@ -1,17 +1,25 @@
+# Publish MCP Server to NPM - 发布 MemoryX MCP Server 到 NPM
+#
+# 用途：发布 MemoryX MCP Server 到 NPM
+# 
+# 触发条件：
+#   - push tag mcp-server-v* (如 mcp-server-v1.0.0)
+#   - workflow_dispatch 手动触发
+#
+# 目录：plugins/memoryx-mcp-server/
+# 包名：@t0ken.ai/memoryx-mcp-server
+
 name: Publish MCP Server
 
 on:
   push:
     tags:
       - 'mcp-server-v*'
+  workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: plugins/memoryx-mcp-server
-    
     steps:
       - uses: actions/checkout@v4
       
@@ -20,14 +28,56 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@t0ken.ai'
       
-      - name: Install dependencies
-        run: npm ci
+      - name: Install SDK dependencies and build
+        working-directory: sdk/nodejs
+        run: |
+          npm ci
+          npm run build
+      
+      - name: Install MCP Server dependencies
+        working-directory: plugins/memoryx-mcp-server
+        run: |
+          npm install ../../sdk/nodejs
+          npm install
       
       - name: Build
+        working-directory: plugins/memoryx-mcp-server
         run: npm run build
       
-      - name: Publish to npm
+      - name: Restore package.json for publishing
+        working-directory: plugins/memoryx-mcp-server
+        run: |
+          npm uninstall @t0ken.ai/memoryx-sdk
+          npm install @t0ken.ai/memoryx-sdk@latest
+      
+      - name: Check package version
+        id: check
+        working-directory: plugins/memoryx-mcp-server
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "local_version=$LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "Package version: $LOCAL_VERSION"
+          
+          NPM_VERSION=$(npm view @t0ken.ai/memoryx-mcp-server version 2>/dev/null || echo "not-published")
+          echo "NPM version: $NPM_VERSION"
+          
+          if [ "$LOCAL_VERSION" = "$NPM_VERSION" ]; then
+            echo "Version $LOCAL_VERSION already published"
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Should publish $LOCAL_VERSION"
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Publish to NPM
+        if: steps.check.outputs.should_publish == 'true'
+        working-directory: plugins/memoryx-mcp-server
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Skip publish
+        if: steps.check.outputs.should_publish == 'false'
+        run: echo "Version already published, skipping"
