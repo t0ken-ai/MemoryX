@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDK 接入指南 - MemoryX</title>
+    <meta name="description" content="使用 MemoryX SDK 将记忆能力集成到你的应用中。支持 Node.js 和 Python。">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            cyan: '#06b6d4',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0a0a0f; }
+        pre { font-family: 'JetBrains Mono', monospace; }
+        .code-block {
+            background: linear-gradient(145deg, #0d1117 0%, #161b22 100%);
+            border: 1px solid #30363d;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="text-slate-300 min-h-screen">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-[#0a0a0f]/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+                <i data-lucide="brain" class="w-7 h-7 text-purple-400"></i>
+                <span class="font-bold text-white text-lg">MemoryX</span>
+            </a>
+            <nav class="flex items-center gap-6 text-sm">
+                <a href="/agent-register" class="text-slate-400 hover:text-white transition-colors">Agent 安装</a>
+                <a href="/sdk-guide" class="text-purple-400 font-medium">SDK 接入</a>
+                <a href="https://docs.t0ken.ai/" class="text-slate-400 hover:text-white transition-colors">API 文档</a>
+                <a href="/portal/" class="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors">Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="py-16 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 mb-6">
+                <i data-lucide="code-2" class="w-4 h-4 text-purple-400"></i>
+                <span class="text-sm text-purple-400">SDK 接入指南</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">
+                将 <span class="gradient-text">MemoryX</span> 集成到你的应用
+            </h1>
+            <p class="text-xl text-slate-400 max-w-2xl mx-auto">
+                使用 Node.js 或 Python SDK，几分钟内为你的应用添加记忆能力
+            </p>
+        </div>
+    </section>
+
+    <!-- SDK Cards -->
+    <section class="py-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-6 mb-12">
+                <!-- Node.js SDK -->
+                <div class="code-block rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-400" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">Node.js SDK</h3>
+                            <p class="text-sm text-slate-500">TypeScript 支持</p>
+                        </div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 mb-4">
+                        <code class="text-sm text-green-400">npm install @t0ken.ai/memoryx-sdk</code>
+                    </div>
+                    <a href="#nodejs" class="text-purple-400 text-sm hover:text-purple-300 flex items-center gap-1">
+                        查看使用方法 <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
+                <!-- Python SDK -->
+                <div class="code-block rounded-xl p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-white">Python SDK</h3>
+                            <p class="text-sm text-slate-500">Python 3.8+</p>
+                        </div>
+                    </div>
+                    <div class="bg-black/30 rounded-lg p-4 mb-4">
+                        <code class="text-sm text-green-400">pip install t0ken-memoryx</code>
+                    </div>
+                    <a href="#python" class="text-purple-400 text-sm hover:text-purple-300 flex items-center gap-1">
+                        查看使用方法 <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-sm font-bold">0</span>
+                工作原理
+            </h2>
+            <div class="code-block rounded-xl p-6 mb-8">
+                <div class="space-y-4 text-slate-300">
+                    <div class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+                        <p>SDK 初始化时<strong class="text-white">无需 API Key</strong>，直接创建客户端实例</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+                        <p>调用 <code class="text-cyan-400">autoRegister()</code> 自动注册，获取 <strong class="text-white">API Key</strong></p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+                        <p><strong class="text-pink-400">重要</strong>：将 API Key 保存到你的业务系统（数据库/配置文件）</p>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0 mt-0.5">4</span>
+                        <p>下次使用时，用保存的 API Key 初始化客户端，记忆数据会自动关联</p>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <p class="text-sm text-purple-300">
+                        <i data-lucide="info" class="w-4 h-4 inline mr-1"></i>
+                        记忆数据跟着 API Key 走。同一个 API Key 在任何设备上都能访问相同的记忆。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Node.js SDK -->
+    <section id="nodejs" class="py-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-sm font-bold">1</span>
+                Node.js SDK
+            </h2>
+
+            <!-- Install -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">安装</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode('npm install @t0ken.ai/memoryx-sdk')">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm"><code class="text-green-400">npm install @t0ken.ai/memoryx-sdk</code></pre>
+                </div>
+            </div>
+
+            <!-- First Time Use -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">首次使用 - 自动注册获取 API Key</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode(this.nextElementSibling.textContent)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm overflow-x-auto"><code class="text-slate-300"><span class="text-purple-400">import</span> { APIClient } <span class="text-purple-400">from</span> <span class="text-green-400">'@t0ken.ai/memoryx-sdk'</span>;
+
+<span class="text-slate-500">// 首次使用：无需 API Key</span>
+<span class="text-purple-400">const</span> client = <span class="text-purple-400">new</span> <span class="text-cyan-400">APIClient</span>();
+
+<span class="text-slate-500">// 自动注册，获取 API Key</span>
+<span class="text-purple-400">const</span> account = <span class="text-purple-400">await</span> client.<span class="text-cyan-400">autoRegister</span>(<span class="text-green-400">'my-app'</span>, <span class="text-green-400">'My Application'</span>);
+
+console.<span class="text-cyan-400">log</span>(<span class="text-green-400">'API Key:'</span>, account.api_key);
+console.<span class="text-cyan-400">log</span>(<span class="text-green-400">'Project ID:'</span>, account.project_id);
+
+<span class="text-pink-400">// ⚠️ 重要：保存 API Key 到你的数据库或配置文件！</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Subsequent Use -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">后续使用 - 用保存的 API Key</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode(this.nextElementSibling.textContent)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm overflow-x-auto"><code class="text-slate-300"><span class="text-purple-400">import</span> { APIClient } <span class="text-purple-400">from</span> <span class="text-green-400">'@t0ken.ai/memoryx-sdk'</span>;
+
+<span class="text-slate-500">// 从你的存储中读取保存的 API Key</span>
+<span class="text-purple-400">const</span> savedApiKey = <span class="text-purple-400">await</span> db.<span class="text-cyan-400">getApiKey</span>(userId);
+
+<span class="text-slate-500">// 使用保存的 API Key 初始化</span>
+<span class="text-purple-400">const</span> client = <span class="text-purple-400">new</span> <span class="text-cyan-400">APIClient</span>({ <span class="text-orange-400">apiKey</span>: savedApiKey });
+
+<span class="text-slate-500">// 添加记忆</span>
+<span class="text-purple-400">await</span> client.<span class="text-cyan-400">sendMemories</span>([
+  { <span class="text-orange-400">content</span>: <span class="text-green-400">'用户偏好深色主题'</span>, <span class="text-orange-400">metadata</span>: { <span class="text-orange-400">category</span>: <span class="text-green-400">'semantic'</span> } }
+]);
+
+<span class="text-slate-500">// 搜索记忆</span>
+<span class="text-purple-400">const</span> results = <span class="text-purple-400">await</span> client.<span class="text-cyan-400">search</span>(<span class="text-green-400">'用户偏好'</span>);</code></pre>
+                </div>
+            </div>
+
+            <!-- API Methods -->
+            <div class="code-block rounded-xl p-6">
+                <h3 class="font-semibold text-white mb-3">主要方法</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">autoRegister()</code>
+                        <span class="text-slate-400">自动注册获取 API Key</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">sendMemories()</code>
+                        <span class="text-slate-400">发送记忆（单条/批量）</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">search()</code>
+                        <span class="text-slate-400">语义搜索记忆</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">list()</code>
+                        <span class="text-slate-400">获取记忆列表</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">delete()</code>
+                        <span class="text-slate-400">删除记忆</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Python SDK -->
+    <section id="python" class="py-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold">2</span>
+                Python SDK
+            </h2>
+
+            <!-- Install -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">安装</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode('pip install t0ken-memoryx')">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm"><code class="text-green-400">pip install t0ken-memoryx</code></pre>
+                </div>
+            </div>
+
+            <!-- First Time Use -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">首次使用 - 自动注册获取 API Key</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode(this.nextElementSibling.textContent)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm overflow-x-auto"><code class="text-slate-300"><span class="text-purple-400">from</span> memoryx <span class="text-purple-400">import</span> APIClient
+
+<span class="text-slate-500"># 首次使用：无需 API Key</span>
+client = <span class="text-cyan-400">APIClient</span>()
+
+<span class="text-slate-500"># 自动注册，获取 API Key</span>
+account = client.<span class="text-cyan-400">auto_register</span>(<span class="text-green-400">"my-app"</span>, <span class="text-green-400">"My Application"</span>)
+
+<span class="text-cyan-400">print</span>(<span class="text-green-400">f"API Key: {account['api_key']}"</span>)
+<span class="text-cyan-400">print</span>(<span class="text-green-400">f"Project ID: {account['project_id']}"</span>)
+
+<span class="text-pink-400"># ⚠️ 重要：保存 API Key 到你的数据库或配置文件！</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Subsequent Use -->
+            <div class="code-block rounded-xl p-6 mb-6">
+                <h3 class="font-semibold text-white mb-3">后续使用 - 用保存的 API Key</h3>
+                <div class="bg-black/30 rounded-lg p-4 relative group">
+                    <button class="absolute top-3 right-3 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100" onclick="copyCode(this.nextElementSibling.textContent)">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                    <pre class="text-sm overflow-x-auto"><code class="text-slate-300"><span class="text-purple-400">from</span> memoryx <span class="text-purple-400">import</span> APIClient
+
+<span class="text-slate-500"># 从你的存储中读取保存的 API Key</span>
+saved_api_key = db.<span class="text-cyan-400">get_api_key</span>(user_id)
+
+<span class="text-slate-500"># 使用保存的 API Key 初始化</span>
+client = <span class="text-cyan-400">APIClient</span>(api_key=saved_api_key)
+
+<span class="text-slate-500"># 添加记忆</span>
+client.<span class="text-cyan-400">send_memories</span>([
+    {<span class="text-green-400">"content"</span>: <span class="text-green-400">"用户偏好深色主题"</span>, <span class="text-green-400">"metadata"</span>: {<span class="text-green-400">"category"</span>: <span class="text-green-400">"semantic"</span>}}
+])
+
+<span class="text-slate-500"># 搜索记忆</span>
+results = client.<span class="text-cyan-400">search</span>(<span class="text-green-400">"用户偏好"</span>)</code></pre>
+                </div>
+            </div>
+
+            <!-- API Methods -->
+            <div class="code-block rounded-xl p-6">
+                <h3 class="font-semibold text-white mb-3">主要方法</h3>
+                <div class="space-y-3 text-sm">
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">auto_register()</code>
+                        <span class="text-slate-400">自动注册获取 API Key</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">send_memories()</code>
+                        <span class="text-slate-400">发送记忆（单条/批量）</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">search()</code>
+                        <span class="text-slate-400">语义搜索记忆</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">list()</code>
+                        <span class="text-slate-400">获取记忆列表</span>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <code class="text-cyan-400 bg-cyan-400/10 px-2 py-1 rounded">delete()</code>
+                        <span class="text-slate-400">删除记忆</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Memory Categories -->
+    <section class="py-8 px-6">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400 text-sm font-bold">3</span>
+                记忆分类
+            </h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="code-block rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                        <code class="text-purple-400">episodic</code>
+                    </div>
+                    <p class="text-sm text-slate-400">情景记忆 - 特定事件和经历</p>
+                </div>
+                <div class="code-block rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                        <code class="text-cyan-400">semantic</code>
+                    </div>
+                    <p class="text-sm text-slate-400">语义记忆 - 事实和概念</p>
+                </div>
+                <div class="code-block rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                        <code class="text-green-400">procedural</code>
+                    </div>
+                    <p class="text-sm text-slate-400">程序记忆 - 技能和操作方法</p>
+                </div>
+                <div class="code-block rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-pink-400"></span>
+                        <code class="text-pink-400">emotional</code>
+                    </div>
+                    <p class="text-sm text-slate-400">情感记忆 - 用户偏好和情感</p>
+                </div>
+                <div class="code-block rounded-xl p-4 md:col-span-2">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                        <code class="text-orange-400">reflective</code>
+                    </div>
+                    <p class="text-sm text-slate-400">反思记忆 - 总结和反思内容</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- More Resources -->
+    <section class="py-12 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="code-block rounded-xl p-8 text-center">
+                <h3 class="text-xl font-semibold text-white mb-4">需要更多帮助？</h3>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="https://docs.t0ken.ai/" target="_blank" class="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                        API 文档
+                    </a>
+                    <a href="https://github.com/t0ken-ai/MemoryX" target="_blank" class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i data-lucide="github" class="w-5 h-5"></i>
+                        GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-slate-800">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i data-lucide="brain" class="w-5 h-5 text-purple-400"></i>
+                <span class="text-slate-400">MemoryX</span>
+            </div>
+            <div class="flex items-center gap-6 text-sm text-slate-500">
+                <a href="/privacy.html" class="hover:text-white transition-colors">隐私政策</a>
+                <a href="/terms.html" class="hover:text-white transition-colors">使用条款</a>
+                <a href="mailto:business@t0ken.ai" class="hover:text-white transition-colors">联系我们</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        
+        function copyCode(text) {
+            if (typeof text === 'string') {
+                navigator.clipboard.writeText(text);
+            } else {
+                navigator.clipboard.writeText(text);
+            }
+            showToast();
+        }
+        
+        function showToast() {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium z-50';
+            toast.textContent = '已复制到剪贴板';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+    </script>
+</body>
+</html>
