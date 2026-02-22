@@ -5,8 +5,12 @@
  * 
  * Powered by @t0ken.ai/memoryx-sdk
  * 
+ * MCP mode (different from OpenClaw conversation flow):
+ * - LLM summarizes and sends single memory additions
+ * - Server extracts entities directly without LLM summarization
+ * - Trigger: 20k tokens or 1 minute idle
+ * 
  * Features:
- * - conversation preset (30k tokens / 5min idle)
  * - Lazy SDK initialization
  * - Automatic memory batching and retry
  */
@@ -47,9 +51,14 @@ async function getSDK(): Promise<any> {
     const envApiKey = process.env.MEMORYX_API_KEY || process.env.OPENMEMORYX_API_KEY;
     const envApiUrl = process.env.MEMORYX_URL || process.env.OPENMEMORYX_URL;
     
-    // Use conversation preset: maxTokens: 30000, intervalMs: 300000 (5 min)
+    // MCP Server uses LLM-summarized single additions (not conversation flow)
+    // Server extracts entities directly without LLM summarization
+    // Trigger: 20k tokens or 1 minute idle
     sdkInstance = new MemoryXSDK({
-      preset: 'conversation',
+      strategy: {
+        maxTokens: 20000,
+        intervalMs: 60000  // 1 minute idle
+      },
       apiKey: envApiKey || undefined,
       apiUrl: envApiUrl || DEFAULT_API_BASE,
       autoRegister: !envApiKey,
@@ -57,7 +66,7 @@ async function getSDK(): Promise<any> {
       storageDir: PLUGIN_DIR
     });
     
-    log("SDK initialized with conversation preset (30k tokens / 5min idle)");
+    log("SDK initialized (20k tokens / 1min idle - MCP mode)");
     return sdkInstance;
   })();
   
