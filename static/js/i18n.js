@@ -1,5 +1,6 @@
 const translations = {
   en: {
+    copyToast: "Copied to clipboard",
     nav: {
       features: "Features",
       agentInstall: "Agent Install",
@@ -87,6 +88,7 @@ const translations = {
       about: "About",
       privacy: "Privacy Policy",
       terms: "Terms of Service",
+      description: "Free Cognitive Memory Engine",
       copyright: "© 2026 MemoryX. All rights reserved."
     },
     sdk: {
@@ -219,6 +221,7 @@ const translations = {
     }
   },
   zh: {
+    copyToast: "已复制到剪贴板",
     nav: {
       features: "功能",
       agentInstall: "Agent 安装",
@@ -306,6 +309,7 @@ const translations = {
       about: "关于",
       privacy: "隐私政策",
       terms: "服务条款",
+      description: "免费认知记忆引擎",
       copyright: "© 2026 MemoryX. 保留所有权利。"
     },
     sdk: {
